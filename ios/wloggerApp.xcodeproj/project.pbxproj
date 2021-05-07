@@ -14,6 +14,7 @@
 		29A458EB990E571E9A762202 /* libPods-wloggerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E42B38518774852AF9B5D592 /* libPods-wloggerApp.a */; };
 		33D5305E53A4D2BEB405D070 /* libPods-wloggerApp-wloggerAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A793203CDD3E79B43723A7B2 /* libPods-wloggerApp-wloggerAppTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		3FF6A54C4E194139B428213D /* BalsamiqSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 96473FED89C7495E8202F114 /* BalsamiqSans-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		E42B38518774852AF9B5D592 /* libPods-wloggerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-wloggerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FB255B54E5C590CC07AC08BA /* Pods-wloggerApp-wloggerAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-wloggerApp-wloggerAppTests.release.xcconfig"; path = "Target Support Files/Pods-wloggerApp-wloggerAppTests/Pods-wloggerApp-wloggerAppTests.release.xcconfig"; sourceTree = "<group>"; };
+		96473FED89C7495E8202F114 /* BalsamiqSans-Regular.ttf */ = {isa = PBXFileReference; name = "BalsamiqSans-Regular.ttf"; path = "../src/assets/fonts/BalsamiqSans-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +136,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				5E02B07E35439B357C0302C1 /* Pods */,
+				6EBBE4D83AE846A797CF3D2E /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -148,6 +151,15 @@
 			);
 			name = Products;
 			sourceTree = "<group>";
+		};
+		6EBBE4D83AE846A797CF3D2E /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				96473FED89C7495E8202F114 /* BalsamiqSans-Regular.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -245,6 +257,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				3FF6A54C4E194139B428213D /* BalsamiqSans-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
