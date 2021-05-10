@@ -23,6 +23,7 @@ export function GoogleButton() {
 
   return (
     <TouchableOpacity
+      activeOpacity={0.7}
       style={styles.googleLoginButton}
       onPress={handleGoogleSignIn}
     >
