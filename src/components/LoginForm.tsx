@@ -3,20 +3,20 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   NativeSyntheticEvent,
   NativeTouchEvent,
   StyleSheet,
 } from "react-native";
-import { useAppDispatch } from "..";
+import { useAppDispatch, useAppSelector } from "..";
 import { loginUser } from "../slices/usersSlice";
-import { Helvetica, primaryColor } from "../util/constants";
+import { Helvetica } from "../util/constants";
+import { Button } from "./Button";
 import { GoogleButton } from "./GoogleButton";
-import { HorizontalDivider } from "./HorizontalDivider";
 
 export default function LoginForm() {
   const [formData, setFormData] = React.useState({ email: "", password: "" });
   const dispatch = useAppDispatch();
+  const loginError = useAppSelector((state) => state.user.loginError);
 
   function handleSubmit(event: NativeSyntheticEvent<NativeTouchEvent>) {
     dispatch(loginUser(formData));
@@ -24,6 +24,11 @@ export default function LoginForm() {
 
   return (
     <View style={styles.loginForm}>
+      {loginError && (
+        <View style={styles.loginError}>
+          <Text style={{ color: "red" }}>{loginError}</Text>
+        </View>
+      )}
       <TextInput
         style={styles.loginInput}
         placeholder="email"
@@ -39,10 +44,9 @@ export default function LoginForm() {
         onChangeText={(password) => setFormData({ ...formData, password })}
         secureTextEntry
       ></TextInput>
-      <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
+      <Button onPress={handleSubmit}>
         <Text style={styles.loginButtonText}>Sign in</Text>
-      </TouchableOpacity>
-      <HorizontalDivider backgroundColor="powderblue" text="or" />
+      </Button>
       <GoogleButton />
     </View>
   );
@@ -54,13 +58,6 @@ const styles = StyleSheet.create({
     maxHeight: 250,
     justifyContent: "space-around",
     flex: 1,
-  },
-  loginButton: {
-    backgroundColor: primaryColor,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-    height: 40,
   },
   loginButtonText: {
     color: "white",
@@ -74,5 +71,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     paddingLeft: 15,
     fontFamily: Helvetica,
+  },
+  loginError: {
+    backgroundColor: "pink",
+    paddingLeft: 10,
+    paddingVertical: 8,
+    borderRadius: 5,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
