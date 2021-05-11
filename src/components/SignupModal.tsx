@@ -27,6 +27,12 @@ export function SignupModal({
     password: "",
     confirmPassword: "",
   });
+  const passwordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
+    null
+  );
+  const confirmPasswordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
+    null
+  );
   const dispatch = useAppDispatch();
   const signupError = useAppSelector((state) => state.user.signupError);
   const signupSuccess = useAppSelector((state) => state.user.signupSuccess);
@@ -47,35 +53,10 @@ export function SignupModal({
       },
     ]);
 
-  function SignupInput(
-    fieldName: string,
-    fieldValue: string,
-    secureTextEntry: boolean = false
-  ): JSX.Element {
-    const errorField = signupError?.field;
-    const errorBorder =
-      fieldName === errorField ? { borderColor: "red", borderWidth: 1 } : {};
-    return (
-      <React.Fragment key={fieldName}>
-        <TextInput
-          style={{ ...styles.signupInput, ...errorBorder }}
-          placeholder={
-            fieldName === "confirmPassword" ? "confirm password" : fieldName
-          }
-          placeholderTextColor="grey"
-          value={fieldValue}
-          secureTextEntry={secureTextEntry}
-          onChangeText={(newValue) => {
-            setFormData({ ...formData, [fieldName]: newValue });
-          }}
-        ></TextInput>
-        {errorField === fieldName && (
-          <View>
-            <Text>{signupError?.error}</Text>
-          </View>
-        )}
-      </React.Fragment>
-    );
+  function errorBorder(fieldName: string) {
+    return fieldName === signupError?.field
+      ? { borderColor: "red", borderWidth: 1 }
+      : {};
   }
 
   return (
@@ -96,11 +77,67 @@ export function SignupModal({
               title="Back"
             />
           </View>
-          {[
-            SignupInput("email", formData.email),
-            SignupInput("password", formData.password, true),
-            SignupInput("confirmPassword", formData.confirmPassword, true),
-          ]}
+          <TextInput
+            style={{ ...styles.signupInput, ...errorBorder("email") }}
+            placeholder="email"
+            placeholderTextColor="grey"
+            value={formData.email}
+            clearButtonMode="while-editing"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            returnKeyType="next"
+            textContentType="emailAddress"
+            onSubmitEditing={() => passwordInputRef.current?.focus()}
+            blurOnSubmit={false}
+            onChangeText={(email) => {
+              setFormData({ ...formData, email });
+            }}
+          ></TextInput>
+          {signupError?.field === "email" && (
+            <View>
+              <Text>{signupError?.error}</Text>
+            </View>
+          )}
+          <TextInput
+            style={{ ...styles.signupInput, ...errorBorder("password") }}
+            placeholder="password"
+            ref={passwordInputRef}
+            placeholderTextColor="grey"
+            value={formData.password}
+            secureTextEntry
+            clearButtonMode="while-editing"
+            returnKeyType="next"
+            textContentType="newPassword"
+            onSubmitEditing={() => confirmPasswordInputRef.current?.focus()}
+            blurOnSubmit={false}
+            onChangeText={(password) => {
+              setFormData({ ...formData, password });
+            }}
+          ></TextInput>
+          {signupError?.field === "password" && (
+            <View>
+              <Text>{signupError?.error}</Text>
+            </View>
+          )}
+          <TextInput
+            style={{ ...styles.signupInput, ...errorBorder("confirmPassword") }}
+            placeholder="confirm password"
+            placeholderTextColor="grey"
+            value={formData.confirmPassword}
+            ref={confirmPasswordInputRef}
+            secureTextEntry
+            clearButtonMode="while-editing"
+            textContentType="newPassword"
+            returnKeyType="join"
+            onChangeText={(confirmPassword) => {
+              setFormData({ ...formData, confirmPassword });
+            }}
+          ></TextInput>
+          {signupError?.field === "confirmPassword" && (
+            <View>
+              <Text>{signupError?.error}</Text>
+            </View>
+          )}
           <Button onPress={handleSubmit} color={successColor}>
             <Text style={styles.signupButtonText}>Sign up</Text>
           </Button>
