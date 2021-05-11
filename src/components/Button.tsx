@@ -8,7 +8,7 @@ import {
 import { primaryColor } from "../util/constants";
 
 interface ButtonProps {
-  children: JSX.Element;
+  children: JSX.Element[] | JSX.Element;
   color?: string;
   onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   style?: any;
