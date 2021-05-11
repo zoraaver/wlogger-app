@@ -17,6 +17,9 @@ export default function LoginForm() {
   const [formData, setFormData] = React.useState({ email: "", password: "" });
   const dispatch = useAppDispatch();
   const loginError = useAppSelector((state) => state.user.loginError);
+  const passwordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
+    null
+  );
 
   function handleSubmit(event: NativeSyntheticEvent<NativeTouchEvent>) {
     dispatch(loginUser(formData));
@@ -34,13 +37,26 @@ export default function LoginForm() {
         placeholder="email"
         placeholderTextColor="grey"
         value={formData.email}
+        clearButtonMode="while-editing"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        returnKeyType="next"
+        textContentType="emailAddress"
+        onSubmitEditing={() => {
+          passwordInputRef.current?.focus();
+        }}
+        blurOnSubmit={false}
         onChangeText={(email) => setFormData({ ...formData, email })}
       ></TextInput>
       <TextInput
         style={styles.loginInput}
+        ref={passwordInputRef}
         placeholder="password"
         placeholderTextColor="grey"
         value={formData.password}
+        clearButtonMode="while-editing"
+        returnKeyType="done"
+        textContentType="password"
         onChangeText={(password) => setFormData({ ...formData, password })}
         secureTextEntry
       ></TextInput>
