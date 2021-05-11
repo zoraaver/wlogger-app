@@ -1,9 +1,10 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as React from "react";
-import { Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, Image, StyleSheet } from "react-native";
 import { useAppDispatch } from "..";
 import { googleLoginUser } from "../slices/usersSlice";
 import { Helvetica, primaryColor } from "../util/constants";
+import { Button } from "./Button";
 
 export function GoogleButton() {
   const dispatch = useAppDispatch();
@@ -22,39 +23,37 @@ export function GoogleButton() {
   }
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Button
+      color={primaryColor}
       style={styles.googleLoginButton}
       onPress={handleGoogleSignIn}
     >
       <Image
         source={require("../assets/images/google_logo.png")}
-        style={{
-          width: 25,
-          height: 25,
-          backgroundColor: "white",
-          padding: 15,
-          borderRadius: 5,
-          marginRight: 60,
-          marginLeft: 10,
-        }}
+        style={styles.googleButtonImage}
       />
       <Text style={styles.googleLoginButtonText}>Sign in with Google</Text>
-    </TouchableOpacity>
+    </Button>
   );
 }
 
 const styles = StyleSheet.create({
   googleLoginButton: {
     flexDirection: "row",
-    backgroundColor: primaryColor,
-    height: 40,
-    borderRadius: 10,
-    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingLeft: 10,
   },
   googleLoginButtonText: {
     fontFamily: Helvetica,
     color: "white",
     fontSize: 18,
+  },
+  googleButtonImage: {
+    width: 25,
+    height: 25,
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 5,
+    marginRight: 60,
   },
 });
