@@ -58,3 +58,14 @@ export function renderAutoIncrementField(
       return "sets";
   }
 }
+
+export function extractTokenFromSetCookieHeaders(
+  responseHeaders: string[]
+): string {
+  for (const header of responseHeaders) {
+    const tokenField: string = header.split(";", 1)[0];
+    const [fieldName, token] = tokenField.split("=");
+    if (fieldName === "token") return token;
+  }
+  throw new Error("Token not found in set cookie headers");
+}
