@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Platform } from "react-native";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const backendUrl: string = "https://wlogger.uk/api";
 const developmentUrl: string =
@@ -10,7 +11,9 @@ export const baseURL =
 
 export const API = axios.create({ baseURL });
 
-API.interceptors.request.use((config) => {
-  config.withCredentials = true;
+API.interceptors.request.use(async (config) => {
+  try {
+    config.headers["Authorisation"] = await EncryptedStorage.getItem("token");
+  } catch (error) {}
   return config;
 });
