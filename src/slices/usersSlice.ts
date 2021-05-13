@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 import { API } from "../config/axios.config";
+import { extractTokenFromSetCookieHeaders } from "../util/util";
 
 const loginUrl = "/auth/login";
 const googleLoginUrl = "/auth/google";
 const validateUrl = "/auth/validate";
 const verifyUrl = "/auth/verify";
-const logoutUrl = "/auth/logout";
 const usersUrl = "/users";
 
 interface userLoginData {
@@ -22,6 +23,13 @@ interface userData {
   email: string;
 }
 
+async function saveToken(response: AxiosResponse<any>): Promise<void> {
+  const token: string = extractTokenFromSetCookieHeaders(
+    response.headers["set-cookie"]
+  );
+  await EncryptedStorage.setItem("token", token);
+}
+
 export const loginUser = createAsyncThunk(
   "users/loginUser",
   async (formData: userLoginData) => {
@@ -30,6 +38,7 @@ export const loginUser = createAsyncThunk(
         loginUrl,
         formData
       );
+      await saveToken(response);
       return response.data.user;
     } catch (error) {
       if (error.response) return Promise.reject(error.response.data);
@@ -45,6 +54,7 @@ export const googleLoginUser = createAsyncThunk(
       const response: AxiosResponse<{
         user: userData;
       }> = await API.post(googleLoginUrl, { idToken });
+      await saveToken(response);
       return response.data.user;
     } catch (error) {
       if (error.response) return Promise.reject(error.response.data);
@@ -75,6 +85,7 @@ export const verifyUser = createAsyncThunk(
           verificationToken,
         }
       );
+      await saveToken(response);
       return response.data.user;
     } catch (error) {
       if (error.response) return Promise.reject(error.response.data);
@@ -100,12 +111,8 @@ export const signupUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk("users/logoutUser", async () => {
   try {
-    const response: AxiosResponse<null> = await API.get(logoutUrl);
-    return response.data;
-  } catch (error) {
-    if (error.response) return Promise.reject(error.response.data);
-    return Promise.reject(error);
-  }
+    await EncryptedStorage.removeItem("token");
+  } catch (error) {}
 });
 
 interface signupError {
@@ -230,7 +237,7 @@ const slice = createSlice({
     );
     builder.addCase(
       logoutUser.fulfilled,
-      (state, action: PayloadAction<null>) => {
+      (state, action: PayloadAction<void>) => {
         state.data = null;
         state.authenticationStatus = "unknown";
       }
