@@ -1,4 +1,5 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { NavigationContainer } from "@react-navigation/native";
 import { configureStore } from "@reduxjs/toolkit";
 import * as React from "react";
 import {
@@ -41,7 +42,9 @@ GoogleSignin.configure({
 export function Application() {
   return (
     <Provider store={store}>
-      <App />
+      <NavigationContainer>
+        <App />
+      </NavigationContainer>
     </Provider>
   );
 }
