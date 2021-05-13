@@ -1,12 +1,5 @@
 import * as React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  NativeSyntheticEvent,
-  NativeTouchEvent,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useAppDispatch, useAppSelector } from "..";
 import { loginUser } from "../slices/usersSlice";
 import { Helvetica } from "../util/constants";
@@ -20,10 +13,6 @@ export default function LoginForm() {
   const passwordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
     null
   );
-
-  function handleSubmit(event: NativeSyntheticEvent<NativeTouchEvent>) {
-    dispatch(loginUser(formData));
-  }
 
   return (
     <View style={styles.loginForm}>
@@ -60,7 +49,7 @@ export default function LoginForm() {
         onChangeText={(password) => setFormData({ ...formData, password })}
         secureTextEntry
       ></TextInput>
-      <Button onPress={handleSubmit}>
+      <Button onPress={() => dispatch(loginUser(formData))}>
         <Text style={styles.loginButtonText}>Sign in</Text>
       </Button>
       <GoogleButton />
