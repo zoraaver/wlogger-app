@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Text, SafeAreaView } from "react-native";
+import { Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch } from "..";
 import { Button } from "../components/Button";
 import { logoutUser } from "../slices/usersSlice";

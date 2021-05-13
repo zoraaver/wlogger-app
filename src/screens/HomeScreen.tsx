@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/core";
 import * as React from "react";
-import { Text, SafeAreaView } from "react-native";
+import { Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 
 export function HomeScreen() {

@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
   StyleSheet,
-  SafeAreaView,
   Text,
   Animated,
   Platform,
@@ -10,6 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { DismissKeyboard } from "../components/DismissKeyboard";
 import { HorizontalDivider } from "../components/HorizontalDivider";
@@ -49,7 +49,7 @@ export default function LoginScreen() {
 
   function decreaseLogoAreaHeightAnimation(event: any) {
     Animated.timing(logoAreaMaxHeight, {
-      toValue: windowHeight / 4.5,
+      toValue: windowHeight / 4.0,
       duration: event.duration * 1.5,
       useNativeDriver: false,
     }).start();
@@ -64,38 +64,34 @@ export default function LoginScreen() {
   }
 
   return (
-    <>
-      <SafeAreaView style={styles.topSafeAreaView} />
-      <DismissKeyboard>
-        <SafeAreaView style={styles.loginScreen}>
-          <SignupModal
-            showSignupModal={showSignupModal}
-            setShowSignupModal={setShowSignupModal}
-          />
-          <Animated.View
-            style={[styles.logoArea, { maxHeight: logoAreaMaxHeight }]}
-          >
-            <Text style={styles.logoHeader}>wLogger</Text>
-            <Text style={styles.logoText}>Track and log workouts</Text>
-          </Animated.View>
-          <View style={styles.inputArea}>
-            <LoginForm />
-            <HorizontalDivider backgroundColor="powderblue" text="or" />
-            <Button
-              color={successColor}
-              onPress={() => setShowSignupModal(true)}
-            >
-              <Text style={styles.signupButtonText}>Create an account</Text>
-            </Button>
-          </View>
-        </SafeAreaView>
-      </DismissKeyboard>
-    </>
+    <DismissKeyboard>
+      <SafeAreaView
+        style={styles.loginScreen}
+        edges={["bottom", "right", "left"]}
+      >
+        <SignupModal
+          showSignupModal={showSignupModal}
+          setShowSignupModal={setShowSignupModal}
+        />
+        <Animated.View
+          style={[styles.logoArea, { maxHeight: logoAreaMaxHeight }]}
+        >
+          <Text style={styles.logoHeader}>wLogger</Text>
+          <Text style={styles.logoText}>Track and log workouts</Text>
+        </Animated.View>
+        <View style={styles.inputArea}>
+          <LoginForm />
+          <HorizontalDivider backgroundColor="powderblue" text="or" />
+          <Button color={successColor} onPress={() => setShowSignupModal(true)}>
+            <Text style={styles.signupButtonText}>Create an account</Text>
+          </Button>
+        </View>
+      </SafeAreaView>
+    </DismissKeyboard>
   );
 }
 
 const styles = StyleSheet.create({
-  topSafeAreaView: { backgroundColor: "powderblue" },
   logoHeader: {
     fontSize: 50,
     fontFamily: BalsamiqSans,

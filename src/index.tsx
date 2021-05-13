@@ -2,6 +2,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { NavigationContainer } from "@react-navigation/native";
 import { configureStore } from "@reduxjs/toolkit";
 import * as React from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
   Provider,
   TypedUseSelectorHook,
@@ -42,9 +43,11 @@ GoogleSignin.configure({
 export function Application() {
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <App />
-      </NavigationContainer>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <App />
+        </NavigationContainer>
+      </SafeAreaProvider>
     </Provider>
   );
 }

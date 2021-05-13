@@ -5,10 +5,10 @@ import {
   Modal,
   StyleSheet,
   TextInput,
-  SafeAreaView,
   Button as NativeButton,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { setSignupSuccess, signupUser } from "../slices/usersSlice";
 import { Helvetica, successColor } from "../util/constants";
