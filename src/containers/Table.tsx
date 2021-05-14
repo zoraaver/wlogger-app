@@ -10,6 +10,7 @@ interface TableProps<RowData, CellData> {
   stripeColor?: string;
   headers?: string[];
   headerTextStyle?: TextStyle;
+  borderWidth?: number;
 }
 
 export function Table<RowData, CellData>({
@@ -19,34 +20,40 @@ export function Table<RowData, CellData>({
   mapRowDataToCells,
   headerTextStyle,
   stripeColor,
+  borderWidth = 0,
 }: TableProps<RowData, CellData>) {
   const headerRow = headers ? (
-    <Row key={-1} style={{ backgroundColor: color ? color : "white" }}>
+    <Row
+      borderWidth={borderWidth}
+      topBorder
+      key={-1}
+      style={{ backgroundColor: color ? color : "white" }}
+    >
       {headers.map((header: string, index: number) => (
-        <Cell key={index}>
+        <Cell key={index} borderWidth={borderWidth}>
           <Text style={headerTextStyle}>{header}</Text>
         </Cell>
       ))}
     </Row>
   ) : undefined;
 
-  const rows: JSX.Element[] = data.map((rowData: RowData, index: number) => {
-    return (
-      <Row
-        key={index}
-        style={{
-          backgroundColor:
-            stripeColor && !(index % 2) ? stripeColor : undefined,
-        }}
-      >
-        {mapRowDataToCells(rowData).map(
-          (cellData: CellData, cellIndex: number) => (
-            <Cell key={cellIndex}>{cellData}</Cell>
-          )
-        )}
-      </Row>
-    );
-  });
+  const rows: JSX.Element[] = data.map((rowData: RowData, index: number) => (
+    <Row
+      key={index}
+      borderWidth={borderWidth}
+      style={{
+        backgroundColor: stripeColor && !(index % 2) ? stripeColor : undefined,
+      }}
+    >
+      {mapRowDataToCells(rowData).map(
+        (cellData: CellData, cellIndex: number) => (
+          <Cell key={cellIndex} borderWidth={borderWidth}>
+            {cellData}
+          </Cell>
+        )
+      )}
+    </Row>
+  ));
 
   if (headerRow) rows.unshift(headerRow);
 

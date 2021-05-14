@@ -4,10 +4,25 @@ import { View, StyleSheet, ViewStyle } from "react-native";
 interface RowProps {
   children: JSX.Element[] | JSX.Element;
   style?: ViewStyle;
+  borderWidth?: number;
+  topBorder?: boolean;
 }
 
-export function Row({ children, style }: RowProps) {
-  return <View style={[styles.row, style]}>{children}</View>;
+export function Row({ children, style, borderWidth, topBorder }: RowProps) {
+  return (
+    <View
+      style={[
+        styles.row,
+        { borderBottomWidth: borderWidth, borderLeftWidth: borderWidth },
+        topBorder && {
+          borderTopWidth: borderWidth,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -17,7 +32,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "stretch",
     minHeight: 45,
-    borderBottomWidth: 0.2,
     borderBottomColor: "grey",
   },
 });

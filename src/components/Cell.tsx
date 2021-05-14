@@ -4,19 +4,28 @@ import { View, StyleSheet, ViewStyle } from "react-native";
 interface CellProps {
   children: React.ReactNode;
   style?: ViewStyle;
+  borderWidth?: number;
 }
 
-export function Cell({ children, style }: CellProps) {
-  return <View style={[styles.cell, style]}>{children}</View>;
+export function Cell({ children, style, borderWidth }: CellProps) {
+  return (
+    <View
+      style={[
+        styles.cell,
+        { borderRightWidth: borderWidth, borderRightColor: "grey" },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   cell: {
     flex: 1,
-    textAlign: "center",
     alignItems: "center",
     justifyContent: "center",
-    borderRightWidth: 0.2,
-    borderRightColor: "grey",
+    padding: 5,
   },
 });
