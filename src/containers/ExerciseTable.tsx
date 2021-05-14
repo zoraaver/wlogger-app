@@ -14,6 +14,7 @@ export function ExerciseTable({ workout }: ExerciseTableProps) {
   return (
     <Table<exerciseData, JSX.Element>
       color="white"
+      borderWidth={0.3}
       stripeColor="#dfe3eb"
       headerTextStyle={styles.headerRowText}
       headers={["Exercise", "Sets x reps", "Weight"]}
@@ -36,7 +37,7 @@ export function ExerciseTable({ workout }: ExerciseTableProps) {
 const styles = StyleSheet.create({
   headerRowText: {
     fontWeight: "bold",
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: Helvetica,
   },
   cellText: {
