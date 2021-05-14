@@ -7,7 +7,12 @@ import { Button } from "../components/Button";
 import { ExerciseTable } from "../containers/ExerciseTable";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
 import { getNextWorkout } from "../slices/workoutsSlice";
-import { Helvetica, infoColor, successColor } from "../util/constants";
+import {
+  BalsamiqSans,
+  Helvetica,
+  infoColor,
+  successColor,
+} from "../util/constants";
 import { isToday, isTomorrow } from "../util/util";
 
 export function HomeScreen() {
@@ -22,13 +27,12 @@ export function HomeScreen() {
     }, [])
   );
 
-  function renderHeader() {
+  function renderHeaderText() {
     switch (message) {
       case undefined:
         break;
       case "Completed":
-        const header: string = `You've finished your current workout plan!`;
-        return header;
+        return "You've finished your current workout plan!";
       default:
         return message;
     }
@@ -40,23 +44,6 @@ export function HomeScreen() {
       return "Tomorrow's workout:";
     } else {
       return `Next workout: ${workoutDate.toDateString()}`;
-    }
-  }
-
-  function renderBody() {
-    if (message === undefined) {
-      return;
-    } else {
-      return (
-        <View style={styles.nextWorkoutBody}>
-          <Button onPress={() => {}} color={successColor}>
-            <Text style={styles.buttonText}>Start a new plan</Text>
-          </Button>
-          <Button onPress={() => {}} color={successColor}>
-            <Text style={styles.buttonText}>Log a workout</Text>
-          </Button>
-        </View>
-      );
     }
   }
 
@@ -82,11 +69,24 @@ export function HomeScreen() {
       >
         <View style={styles.nextWorkout}>
           <View style={styles.nextWorkoutHeader}>
-            <Text style={{ fontSize: 18, fontFamily: Helvetica }}>
-              {renderHeader()}
+            <Text style={styles.nextWorkoutHeaderText}>
+              {renderHeaderText()}
             </Text>
           </View>
-          {nextWorkout ? <ExerciseTable workout={nextWorkout} /> : renderBody()}
+          {nextWorkout ? (
+            <ExerciseTable workout={nextWorkout} />
+          ) : (
+            message && (
+              <View style={styles.nextWorkoutBody}>
+                <Button onPress={() => {}} color={successColor}>
+                  <Text style={styles.buttonText}>Start a new plan</Text>
+                </Button>
+                <Button onPress={() => {}} color={successColor}>
+                  <Text style={styles.buttonText}>Log a workout</Text>
+                </Button>
+              </View>
+            )
+          )}
           <View style={styles.beginWorkout}>{renderBeginWorkoutButton()}</View>
         </View>
       </SafeAreaView>
@@ -105,7 +105,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 10,
     backgroundColor: infoColor,
-    maxHeight: 60,
+    maxHeight: 100,
+  },
+  nextWorkoutHeaderText: {
+    fontSize: 25,
+    fontFamily: BalsamiqSans,
+    textAlign: "center",
   },
   nextWorkoutBody: {
     margin: 20,
