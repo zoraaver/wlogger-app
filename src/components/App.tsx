@@ -65,6 +65,7 @@ export function App() {
     case "confirmed":
       return (
         <Tab.Navigator
+          initialRouteName="Home"
           tabBarOptions={{
             activeTintColor: primaryColor,
             inactiveTintColor: "grey",
