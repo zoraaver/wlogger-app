@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   nextWorkoutHeader: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
+    padding: 10,
     backgroundColor: infoColor,
     maxHeight: 100,
   },
