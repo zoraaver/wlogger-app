@@ -11,7 +11,7 @@ import { SettingsScreen } from "../screens/SettingsScreen";
 import { WorkoutLogsScreen } from "../screens/WorkoutLogsScreen";
 import { validateUser } from "../slices/usersSlice";
 import Ionicon from "react-native-vector-icons/Ionicons";
-import { primaryColor } from "../util/constants";
+import { BalsamiqSans, primaryColor } from "../util/constants";
 import { WorkoutPlansScreen } from "../screens/WorkoutPlansScreen";
 import { RouteProp } from "@react-navigation/native";
 
@@ -67,6 +67,7 @@ export function App() {
         <Tab.Navigator
           initialRouteName="Home"
           tabBarOptions={{
+            labelStyle: { fontFamily: BalsamiqSans },
             activeTintColor: primaryColor,
             inactiveTintColor: "grey",
             keyboardHidesTabBar: true,
