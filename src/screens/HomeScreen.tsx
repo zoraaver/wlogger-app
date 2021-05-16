@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { ExerciseTable } from "../containers/ExerciseTable";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
-import { getNextWorkout } from "../slices/workoutsSlice";
+import { getNextWorkout, workoutData } from "../slices/workoutsSlice";
 import {
   BalsamiqSans,
   Helvetica,
@@ -27,39 +27,6 @@ export function HomeScreen() {
     }, [])
   );
 
-  function renderHeaderText() {
-    switch (message) {
-      case undefined:
-        break;
-      case "Completed":
-        return "You've finished your current workout plan!";
-      default:
-        return message;
-    }
-    if (!nextWorkout || !nextWorkout.date) return;
-    const workoutDate: Date = new Date(nextWorkout.date as string);
-    if (isToday(workoutDate)) {
-      return "Today's workout:";
-    } else if (isTomorrow(workoutDate)) {
-      return "Tomorrow's workout:";
-    } else {
-      return `Next workout: ${workoutDate.toDateString()}`;
-    }
-  }
-
-  function renderBeginWorkoutButton() {
-    if (!nextWorkout || !nextWorkout.date) return;
-    const workoutDate: Date = new Date(nextWorkout.date as string);
-    const buttonText: string = isToday(workoutDate)
-      ? "Begin workout"
-      : "Log a separate workout";
-    return (
-      <Button color={successColor} onPress={() => {}}>
-        <Text style={styles.buttonText}>{buttonText}</Text>
-      </Button>
-    );
-  }
-
   return (
     <>
       <SafeAreaView style={styles.homeScreenTopSafeArea} edges={["top"]} />
@@ -70,7 +37,7 @@ export function HomeScreen() {
         <View style={styles.nextWorkout}>
           <View style={styles.nextWorkoutHeader}>
             <Text style={styles.nextWorkoutHeaderText}>
-              {renderHeaderText()}
+              {renderHeaderText(nextWorkout, message)}
             </Text>
           </View>
           {nextWorkout ? (
@@ -87,11 +54,46 @@ export function HomeScreen() {
               </View>
             )
           )}
-          <View style={styles.beginWorkout}>{renderBeginWorkoutButton()}</View>
+          <View style={styles.beginWorkout}>
+            <BeginWorkoutButton workout={nextWorkout} />
+          </View>
         </View>
       </SafeAreaView>
     </>
   );
+}
+
+function BeginWorkoutButton({ workout }: { workout?: workoutData }) {
+  if (!workout || !workout.date) return null;
+  const workoutDate: Date = new Date(workout.date as string);
+  const buttonText: string = isToday(workoutDate)
+    ? "Begin workout"
+    : "Log a separate workout";
+  return (
+    <Button color={successColor} onPress={() => {}}>
+      <Text style={styles.buttonText}>{buttonText}</Text>
+    </Button>
+  );
+}
+
+function renderHeaderText(workout?: workoutData, message?: string) {
+  switch (message) {
+    case undefined:
+      break;
+    case "Completed":
+      return "You've finished your current workout plan!";
+    default:
+      return message;
+  }
+  if (!workout || !workout.date) return;
+  const workoutDate: Date = new Date(workout.date as string);
+  if (isToday(workoutDate)) {
+    return "Today's workout:";
+  } else if (isTomorrow(workoutDate)) {
+    return "Tomorrow's workout:";
+  } else {
+    return `Next workout: ${workoutDate.toDateString()}`;
+  }
 }
 
 const styles = StyleSheet.create({
