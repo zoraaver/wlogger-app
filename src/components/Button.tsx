@@ -23,7 +23,7 @@ export function Button({
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      style={{ ...styles.button, ...style, backgroundColor: color }}
+      style={[styles.button, { backgroundColor: color }, style]}
       onPress={onPress}
     >
       {children}
