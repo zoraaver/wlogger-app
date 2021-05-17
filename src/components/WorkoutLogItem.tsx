@@ -1,35 +1,54 @@
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useNavigation } from "@react-navigation/core";
+import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
-import { Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
-import { RectButton, Swipeable } from "react-native-gesture-handler";
-import { HomeTabParamList } from "../navigators/HomeTabNavigator";
-import { workoutLogHeaderData } from "../slices/workoutLogsSlice";
+import {
+  Text,
+  StyleSheet,
+  TouchableHighlight,
+  LayoutAnimation,
+  UIManager,
+  Platform,
+} from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
+import { useAppDispatch } from "..";
+import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
+import {
+  deleteWorkoutLog,
+  workoutLogHeaderData,
+} from "../slices/workoutLogsSlice";
 import { Helvetica } from "../util/constants";
+import { Button } from "./Button";
+import Ionicon from "react-native-vector-icons/Ionicons";
 
 interface WorkoutLogItemProps {
-  item: workoutLogHeaderData & {
-    navigation: BottomTabNavigationProp<HomeTabParamList>;
-  };
+  workoutLog: workoutLogHeaderData;
 }
+if (Platform.OS === "android") {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export function WorkoutLogItem({
-  item: { createdAt, exerciseCount, setCount, navigation, _id },
+  workoutLog: { createdAt, exerciseCount, setCount, _id },
 }: WorkoutLogItemProps) {
   const logDate: Date = new Date(createdAt);
+  const navigation = useNavigation<
+    StackNavigationProp<WorkoutLogStackParamList>
+  >();
 
   return (
     <Swipeable
       maxPointers={1}
-      renderRightActions={renderRightActions}
-      friction={1.5}
+      renderRightActions={() => <RenderRightActions id={_id} />}
+      friction={1}
       overshootFriction={8}
-      useNativeAnimations
+      rightThreshold={-50}
     >
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("Logs", { screen: "show", params: { id: _id } })
-        }
+      <TouchableHighlight
+        onPress={() => navigation.navigate("show", { id: _id })}
+        delayPressIn={45}
         style={styles.workoutLogItem}
-        activeOpacity={0.6}
+        activeOpacity={0.8}
+        underlayColor="lightgrey"
       >
         <Text style={styles.workoutLogItemText}>
           <Text style={styles.workoutLogItemHeader}>
@@ -38,21 +57,27 @@ export function WorkoutLogItem({
           {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
           {setCount} set{setCount === 1 ? "" : "s"}
         </Text>
-      </TouchableOpacity>
+      </TouchableHighlight>
     </Swipeable>
   );
 }
 
-function renderRightActions(
-  progressAnimatedValue: Animated.AnimatedInterpolation,
-  dragAnimatedValue: Animated.AnimatedInterpolation
-): React.ReactNode {
+export function RenderRightActions({ id }: { id: string }) {
+  const dispatch = useAppDispatch();
   return (
-    <RectButton onPress={() => {}} style={[styles.deleteButton]}>
+    <Button
+      onPress={() => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        dispatch(deleteWorkoutLog(id));
+      }}
+      style={styles.deleteButton}
+      color="red"
+    >
+      <Ionicon name="trash" size={25} color="white" />
       <Text style={styles.deleteButtonText} accessible>
         Delete
       </Text>
-    </RectButton>
+    </Button>
   );
 }
 
@@ -61,9 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderBottomWidth: 0.2,
     backgroundColor: "white",
-    borderBottomColor: "grey",
   },
   workoutLogItemText: {
     fontSize: 20,
@@ -74,13 +97,13 @@ const styles = StyleSheet.create({
   workoutLogItemHeader: { fontWeight: "normal" },
   deleteButton: {
     minWidth: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "red",
+    height: undefined,
+    borderRadius: 0,
+    padding: 10,
   },
   deleteButtonText: {
     color: "white",
-    fontSize: 20,
+    fontSize: 10,
     fontFamily: Helvetica,
   },
 });
