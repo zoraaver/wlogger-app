@@ -1,8 +1,9 @@
-import { useFocusEffect, useNavigation } from "@react-navigation/core";
+import { useFocusEffect } from "@react-navigation/core";
 import * as React from "react";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
+import { HorizontalDivider } from "../components/HorizontalDivider";
 import { WorkoutLogItem } from "../components/WorkoutLogItem";
 import {
   getWorkoutLogs,
@@ -11,7 +12,6 @@ import {
 
 export function WorkoutLogsScreen() {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -27,12 +27,12 @@ export function WorkoutLogsScreen() {
     <SafeAreaView style={{ flex: 1 }} edges={["bottom", "right", "left"]}>
       <FlatList
         style={{ flex: 1 }}
-        data={workoutLogs.map((workoutLog) => ({
-          ...workoutLog,
-          navigation,
-        }))}
+        data={workoutLogs}
         keyExtractor={(workoutLog: workoutLogHeaderData) => workoutLog._id}
-        renderItem={WorkoutLogItem}
+        renderItem={(data) => <WorkoutLogItem workoutLog={data.item} />}
+        ItemSeparatorComponent={() => (
+          <HorizontalDivider backgroundColor="lightgrey" />
+        )}
       />
     </SafeAreaView>
   );
