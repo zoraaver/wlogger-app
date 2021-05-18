@@ -61,6 +61,8 @@ export function WorkoutLogItem({
   );
   const workoutLogItemHeight = useSharedValue(workoutLogItemInitialHeight);
 
+  const logDate: string = new Date(createdAt).toDateString();
+
   const panGestureEventHandler = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
     { startingTranslateX: number }
@@ -96,7 +98,10 @@ export function WorkoutLogItem({
           translateX.value = withTiming(0);
         } else {
           itemOpacity.value = 0.7;
-          runOnJS(navigation.navigate)({ name: "show", params: { id: _id } });
+          runOnJS(navigation.navigate)({
+            name: "show",
+            params: { id: _id, dateTitle: logDate },
+          });
         }
       },
       onFinish: () => {
@@ -132,8 +137,6 @@ export function WorkoutLogItem({
     }, delay + 50);
   }, [_id]);
 
-  const logDate: Date = new Date(createdAt);
-
   return (
     <Animated.View style={[styles.workoutLogItem, animatedWorkoutLogItemStyle]}>
       <PanGestureHandler onGestureEvent={panGestureEventHandler}>
@@ -142,9 +145,7 @@ export function WorkoutLogItem({
             <Animated.View
               style={[styles.workoutLogHeader, animatedLogHeaderStyle]}
             >
-              <Text style={styles.workoutLogItemText}>
-                {logDate.toDateString()}
-              </Text>
+              <Text style={styles.workoutLogItemText}>{logDate}</Text>
               <Text style={styles.workoutLogDetailsText}>
                 {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
                 {setCount} set{setCount === 1 ? "" : "s"}
