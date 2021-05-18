@@ -60,3 +60,6 @@ buck-out/
 
 # vscode settings
 .vscode
+
+# xcode workspace
+ios/wloggerApp.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
