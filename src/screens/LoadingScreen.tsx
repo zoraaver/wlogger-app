@@ -1,13 +1,18 @@
 import * as React from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, ColorValue, StyleSheet, View } from "react-native";
 import { infoColor } from "../util/constants";
 
-export function LoadingScreen() {
+interface LoadingScreenProps {
+  backgroundColor?: ColorValue;
+}
+
+export function LoadingScreen({
+  backgroundColor = infoColor,
+}: LoadingScreenProps) {
   return (
-    <SafeAreaView style={styles.loadingScreen}>
+    <View style={[styles.loadingScreen, { backgroundColor }]}>
       <ActivityIndicator size="large" color="black" />
-    </SafeAreaView>
+    </View>
   );
 }
 
