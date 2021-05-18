@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/core";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
-import { Text, StyleSheet, LayoutAnimation, View } from "react-native";
+import { Text, StyleSheet, View } from "react-native";
 import { useAppDispatch } from "..";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import {
@@ -12,38 +12,32 @@ import { Helvetica } from "../util/constants";
 import { Button } from "./Button";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import Animated, {
+  runOnJS,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import {
+  PanGestureHandler,
+  PanGestureHandlerGestureEvent,
+  TapGestureHandler,
+  TapGestureHandlerGestureEvent,
+} from "react-native-gesture-handler";
+import { findNearestSnapPoint } from "../util/worklets";
 
 interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
 }
 
-function findNearestSnapPoint(
-  position: number,
-  velocity: number,
-  snapPoints: number[]
-) {
-  "worklet";
-  const currentPosition: number = position + velocity * 0.2;
-  const positionDeltas: number[] = snapPoints.map((snapPoint) =>
-    Math.abs(snapPoint - currentPosition)
-  );
-  const minPositionDelta: number = Math.min(...positionDeltas);
-  return snapPoints.find(
-    (snapPoint) => Math.abs(snapPoint - currentPosition) === minPositionDelta
-  ) as number;
-}
-
 const AnimatedIonicon = Animated.createAnimatedComponent(Ionicon);
-const height = 50;
+const height = 80;
 const maxDeleteButtonFontSize = 10;
 const maxIconSize = 25;
+const rightSnapPoint = -100;
+type itemOpacity = 0.7 | 1;
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
@@ -53,7 +47,9 @@ export function WorkoutLogItem({
     StackNavigationProp<WorkoutLogStackParamList>
   >();
   const dispatch = useAppDispatch();
+
   const translateX = useSharedValue(0);
+  const itemOpacity = useSharedValue<itemOpacity>(1);
   const absoluteTranslateX = useDerivedValue(() => Math.abs(translateX.value));
   const deleteButtonOpacity = useDerivedValue(
     () => absoluteTranslateX.value / 100.0
@@ -61,10 +57,14 @@ export function WorkoutLogItem({
   const deleteButtonFontSize = useDerivedValue(() =>
     Math.min(maxDeleteButtonFontSize, absoluteTranslateX.value / 10.0)
   );
-  const snapPoints: number[] = [-100, 0];
 
-  const eventHandler = useAnimatedGestureHandler({
-    onStart: (event, ctx: { startingTranslateX: number }) => {
+  const snapPoints: number[] = [rightSnapPoint, 0];
+
+  const panGestureEventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    { startingTranslateX: number }
+  >({
+    onStart: (event, ctx) => {
       ctx.startingTranslateX = translateX.value;
     },
     onActive: ({ translationX }, { startingTranslateX }) => {
@@ -82,11 +82,34 @@ export function WorkoutLogItem({
     },
   });
 
+  const tapGestureEventHandler = useAnimatedGestureHandler<TapGestureHandlerGestureEvent>(
+    {
+      onFail: () => {
+        itemOpacity.value = 1;
+      },
+      onCancel: () => {
+        itemOpacity.value = 1;
+      },
+      onEnd: () => {
+        if (translateX.value === rightSnapPoint) {
+          translateX.value = withTiming(0);
+        } else {
+          itemOpacity.value = 0.7;
+          runOnJS(navigation.navigate)({ name: "show", params: { id: _id } });
+        }
+      },
+      onFinish: () => {
+        itemOpacity.value = withDelay(100, withTiming(1)) as 1;
+      },
+    }
+  );
+
   const animatedIconStyle = useAnimatedStyle(() => ({
     fontSize: Math.min(maxIconSize, absoluteTranslateX.value / 4.0),
   }));
   const animatedLogHeaderStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
+    opacity: itemOpacity.value,
   }));
   const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
     width: absoluteTranslateX.value,
@@ -99,26 +122,26 @@ export function WorkoutLogItem({
 
   return (
     <View style={styles.workoutLogItem}>
-      <PanGestureHandler onGestureEvent={eventHandler}>
-        <Animated.View
-          // onPress={() => navigation.navigate("show", { id: _id })}
-          style={[styles.workoutLogHeader, animatedLogHeaderStyle]}
-        >
-          <Text style={styles.workoutLogHeaderText}>
-            {logDate.toDateString()}:{" "}
-            <Text style={{ fontWeight: "300" }}>
-              {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
-              {setCount} set{setCount === 1 ? "" : "s"}
-            </Text>
-          </Text>
+      <PanGestureHandler onGestureEvent={panGestureEventHandler}>
+        <Animated.View style={styles.workoutLogItemTapArea}>
+          <TapGestureHandler onGestureEvent={tapGestureEventHandler}>
+            <Animated.View
+              style={[styles.workoutLogHeader, animatedLogHeaderStyle]}
+            >
+              <Text style={styles.workoutLogItemText}>
+                {logDate.toDateString()}
+              </Text>
+              <Text style={styles.workoutLogDetailsText}>
+                {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
+                {setCount} set{setCount === 1 ? "" : "s"}
+              </Text>
+            </Animated.View>
+          </TapGestureHandler>
         </Animated.View>
       </PanGestureHandler>
       <Animated.View style={animatedHiddenAreaStyle}>
         <Button
           onPress={() => {
-            LayoutAnimation.configureNext(
-              LayoutAnimation.Presets.easeInEaseOut
-            );
             dispatch(deleteWorkoutLog(_id));
           }}
           style={styles.deleteButton}
@@ -142,7 +165,6 @@ export function WorkoutLogItem({
 
 const styles = StyleSheet.create({
   workoutLogHeader: {
-    ...StyleSheet.absoluteFillObject,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -154,14 +176,23 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     height,
   },
-  workoutLogHeaderText: {
+  workoutLogItemTapArea: {
+    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "lightgrey",
+  },
+  workoutLogItemText: {
     fontSize: 20,
+    fontFamily: Helvetica,
+    fontWeight: "bold",
+  },
+  workoutLogDetailsText: {
+    fontWeight: "300",
     fontFamily: Helvetica,
   },
   deleteButton: {
     height,
     borderRadius: 0,
-    padding: 10,
   },
   deleteButtonText: {
     color: "white",
