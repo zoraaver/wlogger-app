@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ScrollView, Text, TextStyle } from "react-native";
+import { ScrollView, Text, TextStyle, View } from "react-native";
 import { Cell } from "../components/Cell";
 import { Row } from "../components/Row";
 
@@ -9,6 +9,7 @@ interface TableProps<RowData, CellData> {
   color?: string;
   stripeColor?: string;
   headers?: string[];
+  scrollable?: boolean;
   headerTextStyle?: TextStyle;
   borderWidth?: number;
 }
@@ -21,6 +22,7 @@ export function Table<RowData, CellData>({
   headerTextStyle,
   stripeColor,
   borderWidth = 0,
+  scrollable = false,
 }: TableProps<RowData, CellData>) {
   const headerRow = headers ? (
     <Row
@@ -57,12 +59,14 @@ export function Table<RowData, CellData>({
 
   if (headerRow) rows.unshift(headerRow);
 
-  return (
+  return scrollable ? (
     <ScrollView
       stickyHeaderIndices={headerRow ? [0] : []}
       contentContainerStyle={{ backgroundColor: color }}
     >
       {rows}
     </ScrollView>
+  ) : (
+    <View style={{ backgroundColor: color, flex: 1 }}>{rows}</View>
   );
 }
