@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/core";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
-import { Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { useAppDispatch } from "..";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import {
@@ -32,17 +32,19 @@ interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
 }
 
+type itemOpacity = 0 | 0.7 | 1;
+
 const AnimatedIonicon = Animated.createAnimatedComponent(Ionicon);
-const height = 80;
+
+const workoutLogItemInitialHeight = 80;
 const maxDeleteButtonFontSize = 10;
 const maxIconSize = 25;
 const rightSnapPoint = -100;
-type itemOpacity = 0.7 | 1;
+const snapPoints: number[] = [rightSnapPoint, 0];
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
 }: WorkoutLogItemProps) {
-  const logDate: Date = new Date(createdAt);
   const navigation = useNavigation<
     StackNavigationProp<WorkoutLogStackParamList>
   >();
@@ -57,8 +59,7 @@ export function WorkoutLogItem({
   const deleteButtonFontSize = useDerivedValue(() =>
     Math.min(maxDeleteButtonFontSize, absoluteTranslateX.value / 10.0)
   );
-
-  const snapPoints: number[] = [rightSnapPoint, 0];
+  const workoutLogItemHeight = useSharedValue(workoutLogItemInitialHeight);
 
   const panGestureEventHandler = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
@@ -104,6 +105,9 @@ export function WorkoutLogItem({
     }
   );
 
+  const animatedWorkoutLogItemStyle = useAnimatedStyle(() => ({
+    height: workoutLogItemHeight.value,
+  }));
   const animatedIconStyle = useAnimatedStyle(() => ({
     fontSize: Math.min(maxIconSize, absoluteTranslateX.value / 4.0),
   }));
@@ -113,15 +117,25 @@ export function WorkoutLogItem({
   }));
   const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
     width: absoluteTranslateX.value,
-    height,
     opacity: deleteButtonOpacity.value,
   }));
   const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
     fontSize: deleteButtonFontSize.value,
   }));
 
+  const handleDeleteWorkoutLog = React.useCallback(() => {
+    const delay: number = 300;
+    workoutLogItemHeight.value = withTiming(0, { duration: delay });
+    itemOpacity.value = withTiming(0, { duration: delay }) as 0;
+    setTimeout(() => {
+      dispatch(deleteWorkoutLog(_id));
+    }, delay + 50);
+  }, [_id]);
+
+  const logDate: Date = new Date(createdAt);
+
   return (
-    <View style={styles.workoutLogItem}>
+    <Animated.View style={[styles.workoutLogItem, animatedWorkoutLogItemStyle]}>
       <PanGestureHandler onGestureEvent={panGestureEventHandler}>
         <Animated.View style={styles.workoutLogItemTapArea}>
           <TapGestureHandler onGestureEvent={tapGestureEventHandler}>
@@ -141,9 +155,7 @@ export function WorkoutLogItem({
       </PanGestureHandler>
       <Animated.View style={animatedHiddenAreaStyle}>
         <Button
-          onPress={() => {
-            dispatch(deleteWorkoutLog(_id));
-          }}
+          onPress={handleDeleteWorkoutLog}
           style={styles.deleteButton}
           color="red"
         >
@@ -159,7 +171,7 @@ export function WorkoutLogItem({
           </Animated.Text>
         </Button>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -169,12 +181,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
-    height,
   },
   workoutLogItem: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    height,
   },
   workoutLogItemTapArea: {
     flex: 1,
@@ -191,8 +201,9 @@ const styles = StyleSheet.create({
     fontFamily: Helvetica,
   },
   deleteButton: {
-    height,
     borderRadius: 0,
+    height: undefined,
+    flex: 1,
   },
   deleteButtonText: {
     color: "white",
