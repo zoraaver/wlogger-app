@@ -11,6 +11,7 @@ export interface workoutLogData {
   updatedAt?: string;
   _id?: string;
   workoutId?: string;
+  notes?: string;
 }
 
 interface workoutLogState {
