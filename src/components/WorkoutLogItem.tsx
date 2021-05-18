@@ -1,15 +1,7 @@
 import { useNavigation } from "@react-navigation/core";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
-import {
-  Text,
-  StyleSheet,
-  TouchableHighlight,
-  LayoutAnimation,
-  UIManager,
-  Platform,
-} from "react-native";
-import { Swipeable } from "react-native-gesture-handler";
+import { Text, StyleSheet, LayoutAnimation, View } from "react-native";
 import { useAppDispatch } from "..";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import {
@@ -19,13 +11,39 @@ import {
 import { Helvetica } from "../util/constants";
 import { Button } from "./Button";
 import Ionicon from "react-native-vector-icons/Ionicons";
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { PanGestureHandler } from "react-native-gesture-handler";
 
 interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
 }
-if (Platform.OS === "android") {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+
+function findNearestSnapPoint(
+  position: number,
+  velocity: number,
+  snapPoints: number[]
+) {
+  "worklet";
+  const currentPosition: number = position + velocity * 0.2;
+  const positionDeltas: number[] = snapPoints.map((snapPoint) =>
+    Math.abs(snapPoint - currentPosition)
+  );
+  const minPositionDelta: number = Math.min(...positionDeltas);
+  return snapPoints.find(
+    (snapPoint) => Math.abs(snapPoint - currentPosition) === minPositionDelta
+  ) as number;
 }
+
+const AnimatedIonicon = Animated.createAnimatedComponent(Ionicon);
+const height = 50;
+const maxDeleteButtonFontSize = 10;
+const maxIconSize = 25;
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
@@ -34,76 +52,119 @@ export function WorkoutLogItem({
   const navigation = useNavigation<
     StackNavigationProp<WorkoutLogStackParamList>
   >();
-
-  return (
-    <Swipeable
-      maxPointers={1}
-      renderRightActions={() => <RenderRightActions id={_id} />}
-      friction={1}
-      overshootFriction={8}
-      rightThreshold={-50}
-    >
-      <TouchableHighlight
-        onPress={() => navigation.navigate("show", { id: _id })}
-        delayPressIn={45}
-        style={styles.workoutLogItem}
-        activeOpacity={0.8}
-        underlayColor="lightgrey"
-      >
-        <Text style={styles.workoutLogItemText}>
-          <Text style={styles.workoutLogItemHeader}>
-            {logDate.toDateString()}:
-          </Text>{" "}
-          {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
-          {setCount} set{setCount === 1 ? "" : "s"}
-        </Text>
-      </TouchableHighlight>
-    </Swipeable>
-  );
-}
-
-export function RenderRightActions({ id }: { id: string }) {
   const dispatch = useAppDispatch();
+  const translateX = useSharedValue(0);
+  const absoluteTranslateX = useDerivedValue(() => Math.abs(translateX.value));
+  const deleteButtonOpacity = useDerivedValue(
+    () => absoluteTranslateX.value / 100.0
+  );
+  const deleteButtonFontSize = useDerivedValue(() =>
+    Math.min(maxDeleteButtonFontSize, absoluteTranslateX.value / 10.0)
+  );
+  const snapPoints: number[] = [-100, 0];
+
+  const eventHandler = useAnimatedGestureHandler({
+    onStart: (event, ctx: { startingTranslateX: number }) => {
+      ctx.startingTranslateX = translateX.value;
+    },
+    onActive: ({ translationX }, { startingTranslateX }) => {
+      if (translationX + startingTranslateX <= 0) {
+        translateX.value = translationX + startingTranslateX;
+      }
+    },
+    onEnd: ({ velocityX, translationX }) => {
+      const snapPoint = findNearestSnapPoint(
+        translationX,
+        velocityX,
+        snapPoints
+      );
+      translateX.value = withTiming(snapPoint);
+    },
+  });
+
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    fontSize: Math.min(maxIconSize, absoluteTranslateX.value / 4.0),
+  }));
+  const animatedLogHeaderStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+  const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
+    width: absoluteTranslateX.value,
+    height,
+    opacity: deleteButtonOpacity.value,
+  }));
+  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
+    fontSize: deleteButtonFontSize.value,
+  }));
+
   return (
-    <Button
-      onPress={() => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        dispatch(deleteWorkoutLog(id));
-      }}
-      style={styles.deleteButton}
-      color="red"
-    >
-      <Ionicon name="trash" size={25} color="white" />
-      <Text style={styles.deleteButtonText} accessible>
-        Delete
-      </Text>
-    </Button>
+    <View style={styles.workoutLogItem}>
+      <PanGestureHandler onGestureEvent={eventHandler}>
+        <Animated.View
+          // onPress={() => navigation.navigate("show", { id: _id })}
+          style={[styles.workoutLogHeader, animatedLogHeaderStyle]}
+        >
+          <Text style={styles.workoutLogHeaderText}>
+            {logDate.toDateString()}:{" "}
+            <Text style={{ fontWeight: "300" }}>
+              {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
+              {setCount} set{setCount === 1 ? "" : "s"}
+            </Text>
+          </Text>
+        </Animated.View>
+      </PanGestureHandler>
+      <Animated.View style={animatedHiddenAreaStyle}>
+        <Button
+          onPress={() => {
+            LayoutAnimation.configureNext(
+              LayoutAnimation.Presets.easeInEaseOut
+            );
+            dispatch(deleteWorkoutLog(_id));
+          }}
+          style={styles.deleteButton}
+          color="red"
+        >
+          <AnimatedIonicon
+            name="trash"
+            color="white"
+            style={animatedIconStyle}
+          />
+          <Animated.Text
+            style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
+          >
+            Delete
+          </Animated.Text>
+        </Button>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  workoutLogItem: {
+  workoutLogHeader: {
+    ...StyleSheet.absoluteFillObject,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
+    height,
   },
-  workoutLogItemText: {
+  workoutLogItem: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    height,
+  },
+  workoutLogHeaderText: {
     fontSize: 20,
     fontFamily: Helvetica,
-    fontWeight: "300",
-    marginVertical: 15,
   },
-  workoutLogItemHeader: { fontWeight: "normal" },
   deleteButton: {
-    minWidth: 100,
-    height: undefined,
+    height,
     borderRadius: 0,
     padding: 10,
   },
   deleteButtonText: {
     color: "white",
-    fontSize: 10,
     fontFamily: Helvetica,
   },
 });
