@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/core";
 import * as React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
@@ -30,34 +30,33 @@ export function HomeScreen() {
   return (
     <>
       <SafeAreaView style={styles.homeScreenTopSafeArea} edges={["top"]} />
-      <SafeAreaView
-        style={styles.homeScreen}
-        edges={["bottom", "left", "right"]}
-      >
-        <View style={styles.nextWorkout}>
-          <View style={styles.nextWorkoutHeader}>
-            <Text style={styles.nextWorkoutHeaderText}>
-              {renderHeaderText(nextWorkout, message)}
-            </Text>
+      <SafeAreaView style={styles.homeScreen} edges={["left", "right"]}>
+        <ScrollView>
+          <View style={styles.nextWorkout}>
+            <View style={styles.nextWorkoutHeader}>
+              <Text style={styles.nextWorkoutHeaderText}>
+                {renderHeaderText(nextWorkout, message)}
+              </Text>
+            </View>
+            {nextWorkout ? (
+              <ExerciseTable workout={nextWorkout} />
+            ) : (
+              message && (
+                <View style={styles.nextWorkoutBody}>
+                  <Button onPress={() => {}} color={successColor}>
+                    <Text style={styles.buttonText}>Start a new plan</Text>
+                  </Button>
+                  <Button onPress={() => {}} color={successColor}>
+                    <Text style={styles.buttonText}>Log a workout</Text>
+                  </Button>
+                </View>
+              )
+            )}
+            <View style={styles.beginWorkout}>
+              <BeginWorkoutButton workout={nextWorkout} />
+            </View>
           </View>
-          {nextWorkout ? (
-            <ExerciseTable workout={nextWorkout} />
-          ) : (
-            message && (
-              <View style={styles.nextWorkoutBody}>
-                <Button onPress={() => {}} color={successColor}>
-                  <Text style={styles.buttonText}>Start a new plan</Text>
-                </Button>
-                <Button onPress={() => {}} color={successColor}>
-                  <Text style={styles.buttonText}>Log a workout</Text>
-                </Button>
-              </View>
-            )
-          )}
-          <View style={styles.beginWorkout}>
-            <BeginWorkoutButton workout={nextWorkout} />
-          </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </>
   );
@@ -100,7 +99,7 @@ const styles = StyleSheet.create({
   homeScreenTopSafeArea: { flex: 0, backgroundColor: infoColor },
   homeScreen: { flex: 1, backgroundColor: "powderblue" },
   nextWorkout: {
-    maxHeight: "66%",
+    flex: 1,
   },
   nextWorkoutHeader: {
     alignItems: "center",
