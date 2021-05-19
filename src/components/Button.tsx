@@ -1,9 +1,11 @@
 import * as React from "react";
+import { StyleProp } from "react-native";
 import {
   NativeSyntheticEvent,
   NativeTouchEvent,
   StyleSheet,
   TouchableOpacity,
+  ViewStyle,
 } from "react-native";
 import { primaryColor } from "../util/constants";
 
@@ -11,7 +13,7 @@ interface ButtonProps {
   children: React.ReactNode;
   color?: string;
   onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function Button({
