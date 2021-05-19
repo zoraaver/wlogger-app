@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import {
   exerciseLogData,
   setLogData,
   workoutLogData,
 } from "../slices/workoutLogsSlice";
+import { Helvetica } from "../util/constants";
 import { DeviceOrientation, useOrientation } from "../util/hooks";
 import { renderRestInterval } from "../util/util";
 import { Table, MergeCell } from "./Table";
@@ -22,7 +23,6 @@ export function WorkoutLogTable({ workoutLog }: WorkoutLogTableProps) {
     "Reps",
     "Weight",
     orientation === DeviceOrientation.portrait ? "Rest" : "Rest Interval",
-    orientation === DeviceOrientation.portrait ? "Video" : "Form Video",
   ];
 
   return (
@@ -38,17 +38,14 @@ export function WorkoutLogTable({ workoutLog }: WorkoutLogTableProps) {
           return MergeCell.top;
         }
       }}
-      mapRowDataToCells={(setData: tableSetLogData) => [
-        <Text>{setData.name}</Text>,
-        <Text>{setData.repetitions}</Text>,
-        <Text>
-          {setData.weight} {setData.unit}
-        </Text>,
-        <Text>{renderRestInterval(setData.restInterval)}</Text>,
-        <Text>
-          {setData.formVideoExtension ? setData.formVideoExtension : "-"}
-        </Text>,
-      ]}
+      mapRowDataToCells={(setData: tableSetLogData) =>
+        [
+          setData.name,
+          setData.repetitions,
+          `${setData.weight} ${setData.unit}`,
+          renderRestInterval(setData.restInterval),
+        ].map((text) => <Text style={styles.cellText}>{text}</Text>)
+      }
     />
   );
 }
@@ -63,3 +60,7 @@ function mapExerciseLogDataToSetData(
   );
   return sets.flat();
 }
+
+const styles = StyleSheet.create({
+  cellText: { fontFamily: Helvetica, fontSize: 18 },
+});
