@@ -1,9 +1,9 @@
 import * as React from "react";
-import { View, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, ViewStyle, StyleProp } from "react-native";
 
 interface CellProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   borderWidth?: number;
 }
 
@@ -12,7 +12,11 @@ export function Cell({ children, style, borderWidth }: CellProps) {
     <View
       style={[
         styles.cell,
-        { borderRightWidth: borderWidth, borderRightColor: "grey" },
+        {
+          borderLeftWidth: borderWidth,
+          borderTopWidth: borderWidth,
+          borderRightColor: "grey",
+        },
         style,
       ]}
     >
