@@ -4,7 +4,6 @@ import {
   Text,
   Animated,
   Platform,
-  Keyboard,
   KeyboardEventName,
   useWindowDimensions,
   View,
@@ -21,6 +20,7 @@ import {
   infoColor,
   successColor,
 } from "../util/constants";
+import { useKeyboard } from "../util/hooks";
 
 export default function LoginScreen() {
   const [showSignupModal, setShowSignupModal] = React.useState(false);
@@ -28,24 +28,13 @@ export default function LoginScreen() {
   const logoAreaMaxHeight = React.useRef(new Animated.Value(windowHeight))
     .current;
 
-  React.useEffect(() => {
-    const keyboardEvents = Platform.select({
-      ios: ["keyboardWillShow", "keyboardWillHide"],
-      android: ["keyboardDidShow", "keyboardDidHide"],
-    }) as KeyboardEventName[];
-    Keyboard.addListener(keyboardEvents[0], decreaseLogoAreaHeightAnimation);
-    Keyboard.addListener(keyboardEvents[1], increaseLogoAreaHeightAniimation);
-    return () => {
-      Keyboard.removeListener(
-        keyboardEvents[0],
-        decreaseLogoAreaHeightAnimation
-      );
-      Keyboard.removeListener(
-        keyboardEvents[1],
-        increaseLogoAreaHeightAniimation
-      );
-    };
-  }, []);
+  const keyboardEvents = Platform.select({
+    ios: { show: "keyboardWillShow", hide: "keyboardWillHide" },
+    android: { show: "keyboardDidShow", hide: "keyboardDidHide" },
+  }) as { show: KeyboardEventName; hide: KeyboardEventName };
+
+  useKeyboard(keyboardEvents.show, decreaseLogoAreaHeightAnimation);
+  useKeyboard(keyboardEvents.hide, increaseLogoAreaHeightAniimation);
 
   function decreaseLogoAreaHeightAnimation(event: any) {
     Animated.timing(logoAreaMaxHeight, {
