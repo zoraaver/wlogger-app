@@ -27,5 +27,5 @@ export function useKeyboard(
     return () => {
       Keyboard.removeListener(event, listener);
     };
-  });
+  }, []);
 }
