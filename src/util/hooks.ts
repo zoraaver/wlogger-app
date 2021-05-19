@@ -1,4 +1,10 @@
-import { useWindowDimensions } from "react-native";
+import { useEffect } from "react";
+import {
+  Keyboard,
+  KeyboardEventListener,
+  KeyboardEventName,
+  useWindowDimensions,
+} from "react-native";
 
 export enum DeviceOrientation {
   portrait,
@@ -10,4 +16,16 @@ export function useOrientation(): DeviceOrientation {
   return height > width
     ? DeviceOrientation.portrait
     : DeviceOrientation.landscape;
+}
+
+export function useKeyboard(
+  event: KeyboardEventName,
+  listener: KeyboardEventListener
+): void {
+  useEffect(() => {
+    Keyboard.addListener(event, listener);
+    return () => {
+      Keyboard.removeListener(event, listener);
+    };
+  });
 }
