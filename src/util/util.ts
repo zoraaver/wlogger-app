@@ -7,7 +7,7 @@ import {
 import { incrementField } from "../slices/workoutsSlice";
 
 export function renderRestInterval(seconds?: number) {
-  if (seconds === undefined) return "-";
+  if (!seconds) return "-";
   seconds = Math.round(seconds);
   const minutes = Math.floor(seconds / 60);
   seconds = seconds % 60;
