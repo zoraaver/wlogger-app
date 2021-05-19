@@ -1,9 +1,15 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
+import { RootState } from "..";
 import { API } from "../config/axios.config";
 import { weightUnit } from "./workoutPlansSlice";
 
-const workoutLogUrl = "/workoutLogs";
+export const workoutLogUrl = "/workoutLogs";
 
 export interface workoutLogData {
   exercises: Array<exerciseLogData>;
@@ -431,6 +437,27 @@ const slice = createSlice({
     });
   },
 });
+
+// selectors
+const editWorkoutLogSelector = (state: RootState) =>
+  state.workoutLogs.editWorkoutLog;
+
+export const videoSetsSelector = createSelector(
+  editWorkoutLogSelector,
+  (workoutLog: workoutLogData) =>
+    workoutLog.exercises
+      .map((exerciseLogData) =>
+        exerciseLogData.sets
+          .filter((set) => set.formVideoExtension)
+          .map((set) => ({
+            ...set,
+            exerciseName: exerciseLogData.name,
+            exerciseId: exerciseLogData._id,
+            workoutLogId: workoutLog._id,
+          }))
+      )
+      .flat()
+);
 
 export const workoutLogsReducer = slice.reducer;
 export const {
