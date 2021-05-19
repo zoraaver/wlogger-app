@@ -85,6 +85,11 @@ export function Table<RowData, CellData>({
   );
 }
 
+interface RowCellColors {
+  previousRow: Array<ColorValue | undefined>;
+  currentRow: Array<ColorValue | undefined>;
+}
+
 function renderRows<RowData, CellData>(
   data: TableProps<RowData, CellData>["data"],
   stripeColor: TableProps<RowData, CellData>["stripeColor"],
@@ -94,36 +99,67 @@ function renderRows<RowData, CellData>(
   color: TableProps<RowData, CellData>["color"]
 ): JSX.Element[] {
   let rows: JSX.Element[] = [];
-  let cellColors: {
-    previousRow: Array<ColorValue | undefined>;
-    currentRow: Array<ColorValue | undefined>;
-  } = { previousRow: [], currentRow: [] };
+  let cellColors: RowCellColors = { previousRow: [], currentRow: [] };
+
   data.forEach((rowData: RowData, rowIndex: number) => {
-    const rowColor = stripeColor && !(rowIndex % 2) ? stripeColor : color;
-    const cells: JSX.Element[] = mapRowDataToCells(rowData).map(
-      (cellData: CellData, cellIndex: number) => {
-        const merge = mergeCell?.(rowIndex, cellIndex, data);
-        const cellStyle: StyleProp<ViewStyle> = {};
-        cellStyle.backgroundColor = rowColor;
-        if (merge !== undefined) {
-          if (merge === MergeCell.left) {
-            cellStyle.borderLeftWidth = 0;
-          } else {
-            cellStyle.borderTopWidth = 0;
-            cellStyle.backgroundColor = cellColors?.previousRow?.[cellIndex];
-          }
-        }
-        cellColors.currentRow.push(cellStyle.backgroundColor || rowColor);
-        return (
-          <Cell key={cellIndex} borderWidth={borderWidth} style={cellStyle}>
-            {cellData}
-          </Cell>
-        );
-      }
+    const rowColor = !(rowIndex % 2) ? stripeColor : color;
+    const mergeCellPartial = (cellIndex: number) =>
+      mergeCell?.(rowIndex, cellIndex, data);
+
+    const cells: JSX.Element[] = renderCells(
+      rowData,
+      mapRowDataToCells,
+      cellColors,
+      mergeCellPartial,
+      borderWidth,
+      rowColor
     );
+
     cellColors.previousRow = [...cellColors.currentRow];
     cellColors.currentRow = [];
     rows.push(<Row key={rowIndex}>{cells}</Row>);
   });
+
   return rows;
+}
+
+function renderCells<RowData, CellData>(
+  rowData: RowData,
+  mapRowDataToCells: TableProps<RowData, CellData>["mapRowDataToCells"],
+  cellColors: RowCellColors,
+  mergeCell: (cellIndex: number) => void | MergeCell | undefined,
+  borderWidth: TableProps<RowData, CellData>["borderWidth"],
+  rowColor: string | undefined
+): JSX.Element[] {
+  return mapRowDataToCells(rowData).map(
+    (cellData: CellData, cellIndex: number) => {
+      const cellStyle: StyleProp<ViewStyle> = calculateCellStyle(
+        mergeCell?.(cellIndex),
+        rowColor,
+        cellColors.previousRow?.[cellIndex]
+      );
+      cellColors.currentRow.push(cellStyle.backgroundColor || rowColor);
+      return (
+        <Cell key={cellIndex} borderWidth={borderWidth} style={cellStyle}>
+          {cellData}
+        </Cell>
+      );
+    }
+  );
+}
+
+function calculateCellStyle(
+  merge: MergeCell | void | undefined,
+  rowColor: ColorValue | undefined,
+  aboveCellColor: ColorValue | undefined
+): ViewStyle {
+  const cellStyle: ViewStyle = {};
+  cellStyle.backgroundColor = rowColor;
+  if (merge === MergeCell.left) {
+    cellStyle.borderLeftWidth = 0;
+  } else if (merge === MergeCell.top) {
+    cellStyle.borderTopWidth = 0;
+    cellStyle.backgroundColor = aboveCellColor;
+  }
+  return cellStyle;
 }
