@@ -13,3 +13,8 @@ export function findNearestSnapPoint(
     (snapPoint) => Math.abs(snapPoint - currentPosition) === minPositionDelta
   ) as number;
 }
+
+export function includes<T>(array: Array<T>, searchElement: T): boolean {
+  "worklet";
+  return array.includes(searchElement);
+}

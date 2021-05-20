@@ -19,7 +19,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { findNearestSnapPoint } from "./worklets";
+import { findNearestSnapPoint, includes } from "./worklets";
 
 export enum DeviceOrientation {
   portrait,
@@ -118,7 +118,7 @@ export function useSwipeableTapHandler<TapCallBackArgs>(
         itemOpacity.value = 1;
       },
       onEnd: () => {
-        if (translateX.value !== 0 && snapPoints.includes(translateX.value)) {
+        if (translateX.value !== 0 && includes(snapPoints, translateX.value)) {
           translateX.value = withTiming(0);
         } else {
           itemOpacity.value = 0.7;
