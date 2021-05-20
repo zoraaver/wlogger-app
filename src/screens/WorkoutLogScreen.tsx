@@ -13,8 +13,7 @@ import { LoadingScreen } from "./LoadingScreen";
 import { Helvetica } from "../util/constants";
 import { ScrollView } from "react-native-gesture-handler";
 import { WorkoutLogTable } from "../containers/WorkoutLogTable";
-import EncryptedStorage from "react-native-encrypted-storage";
-import { WorkoutLogVideo } from "../components/WorkoutLogVideo";
+import { WorkoutLogVideoRow } from "../components/WorkoutLogVideoRow";
 
 type WorkoutLogScreenRouteProp = RouteProp<WorkoutLogStackParamList, "show">;
 
@@ -24,17 +23,11 @@ export function WorkoutLogScreen() {
     (state) => state.workoutLogs.editWorkoutLog
   );
   const setsWithVideos = useAppSelector(videoSetsSelector);
-  const [token, setToken] = React.useState("");
   const dispatch = useAppDispatch();
 
   useFocusEffect(
     React.useCallback(() => {
       dispatch(getWorkoutLog(id));
-      EncryptedStorage.getItem("token").then((result) => {
-        if (result) {
-          setToken(result);
-        }
-      });
     }, [id])
   );
 
@@ -49,11 +42,9 @@ export function WorkoutLogScreen() {
           <View style={styles.videoHeader}>
             <Text style={styles.videoHeaderText}>Form videos</Text>
           </View>
-          {token
-            ? setsWithVideos.map((set) => (
-                <WorkoutLogVideo set={set} authToken={token} key={set._id} />
-              ))
-            : null}
+          {setsWithVideos.map((set) => (
+            <WorkoutLogVideoRow set={set} key={set._id} />
+          ))}
         </View>
       ) : null}
       {workoutLog.notes && (
