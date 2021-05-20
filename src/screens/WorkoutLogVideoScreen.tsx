@@ -1,35 +1,51 @@
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import {
+  CompositeNavigationProp,
   RouteProp,
   useFocusEffect,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import EncryptedStorage from "react-native-encrypted-storage";
 import Video from "react-native-video";
+import { HomeTabParamList } from "../navigators/HomeTabNavigator";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import { LoadingScreen } from "./LoadingScreen";
 
-type WorkoutLogVideoScreenProp = RouteProp<
+type WorkoutLogVideoScreenRouteProp = RouteProp<
   WorkoutLogStackParamList,
   "showVideo"
 >;
 
+type WorkoutLogVideoScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<HomeTabParamList, "Logs">,
+  StackNavigationProp<WorkoutLogStackParamList>
+>;
+
 export function WorkoutLogVideoScreen() {
-  const videoUrl: string = useRoute<WorkoutLogVideoScreenProp>().params
+  const videoUrl: string = useRoute<WorkoutLogVideoScreenRouteProp>().params
     .videoUrl;
   const { width: windowWidth } = useWindowDimensions();
   const [token, setToken] = React.useState("");
-  const navigation = useNavigation();
+  const navigation = useNavigation<WorkoutLogVideoScreenNavigationProp>();
 
   useFocusEffect(
     React.useCallback(() => {
       EncryptedStorage.getItem("token").then((result) => {
-        if (result) {
-          setToken(result);
-        }
+        setToken(result ?? "");
       });
+    }, [])
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: false });
+      return () => {
+        navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: true });
+      };
     }, [])
   );
 
@@ -43,6 +59,7 @@ export function WorkoutLogVideoScreen() {
       controls
       ignoreSilentSwitch="ignore"
       onEnd={() => navigation.goBack()}
+      onError={() => navigation.goBack()}
     />
   );
 }
