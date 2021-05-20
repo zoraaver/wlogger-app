@@ -16,15 +16,19 @@ const Stack = createStackNavigator<WorkoutLogStackParamList>();
 
 export function WorkoutLogStackNavigator() {
   return (
-    <Stack.Navigator initialRouteName="index">
+    <Stack.Navigator
+      initialRouteName="index"
+      screenOptions={{
+        headerTitleStyle: styles.screenHeaderTitle,
+        headerStyle: styles.screenHeader,
+        headerTitleAlign: "center",
+      }}
+    >
       <Stack.Screen
         component={WorkoutLogsScreen}
         name="index"
         options={{
           headerTitle: "Logs",
-          headerTitleStyle: styles.screenHeaderTitle,
-          headerStyle: styles.screenHeader,
-          headerTitleAlign: "center",
         }}
       />
       <Stack.Screen
@@ -33,9 +37,6 @@ export function WorkoutLogStackNavigator() {
         options={({ route }) => ({
           title: route.params.dateTitle,
           headerBackTitle: "Logs",
-          headerStyle: styles.screenHeader,
-          headerTitleStyle: styles.screenHeaderTitle,
-          headerTitleAlign: "center",
         })}
       />
       <Stack.Screen
@@ -43,9 +44,6 @@ export function WorkoutLogStackNavigator() {
         name="showVideo"
         options={({ route }) => ({
           title: route.params.videoTitle,
-          headerStyle: styles.screenHeader,
-          headerTitleStyle: styles.screenHeaderTitle,
-          headerTitleAlign: "center",
         })}
       />
     </Stack.Navigator>
