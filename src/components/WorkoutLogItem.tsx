@@ -10,31 +10,24 @@ import {
 } from "../slices/workoutLogsSlice";
 import { Helvetica } from "../util/constants";
 import { Button } from "./Button";
-import Ionicon from "react-native-vector-icons/Ionicons";
 import Animated, {
-  runOnJS,
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useDerivedValue,
-  useSharedValue,
-  withDelay,
-  withTiming,
 } from "react-native-reanimated";
 import {
   PanGestureHandler,
-  PanGestureHandlerGestureEvent,
   TapGestureHandler,
-  TapGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
-import { findNearestSnapPoint } from "../util/worklets";
+import {
+  useHorizontalSwipeHandler,
+  useSwipeableTapHandler,
+  useVerticalCollapseTransition,
+} from "../util/hooks";
+import { AnimatedIonicon } from "./AnimatedIonicon";
 
 interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
 }
-
-type itemOpacity = 0 | 0.7 | 1;
-
-const AnimatedIonicon = Animated.createAnimatedComponent(Ionicon);
 
 const workoutLogItemInitialHeight = 80;
 const maxDeleteButtonFontSize = 10;
@@ -45,74 +38,48 @@ const snapPoints: number[] = [rightSnapPoint, 0];
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
 }: WorkoutLogItemProps) {
+  const logDate: string = new Date(createdAt).toDateString();
+
   const navigation = useNavigation<
     StackNavigationProp<WorkoutLogStackParamList>
   >();
   const dispatch = useAppDispatch();
 
-  const translateX = useSharedValue(0);
-  const itemOpacity = useSharedValue<itemOpacity>(1);
-  const absoluteTranslateX = useDerivedValue(() => Math.abs(translateX.value));
+  const {
+    panGestureEventHandler,
+    absoluteTranslateX,
+    translateX,
+  } = useHorizontalSwipeHandler(snapPoints);
+
+  const {
+    animatedCollapseItemStyle,
+    collapseTransition,
+  } = useVerticalCollapseTransition(
+    workoutLogItemInitialHeight,
+    300,
+    () => {
+      dispatch(deleteWorkoutLog(_id));
+    },
+    30
+  );
+
+  const { tapGestureEventHandler, itemOpacity } = useSwipeableTapHandler(
+    translateX,
+    snapPoints,
+    navigation.navigate,
+    {
+      name: "show",
+      params: { id: _id, dateTitle: logDate },
+    }
+  );
+
   const deleteButtonOpacity = useDerivedValue(
     () => absoluteTranslateX.value / 100.0
   );
   const deleteButtonFontSize = useDerivedValue(() =>
     Math.min(maxDeleteButtonFontSize, absoluteTranslateX.value / 10.0)
   );
-  const workoutLogItemHeight = useSharedValue(workoutLogItemInitialHeight);
 
-  const logDate: string = new Date(createdAt).toDateString();
-
-  const panGestureEventHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    { startingTranslateX: number }
-  >({
-    onStart: (event, ctx) => {
-      ctx.startingTranslateX = translateX.value;
-    },
-    onActive: ({ translationX }, { startingTranslateX }) => {
-      if (translationX + startingTranslateX <= 0) {
-        translateX.value = translationX + startingTranslateX;
-      }
-    },
-    onEnd: ({ velocityX, translationX }) => {
-      const snapPoint = findNearestSnapPoint(
-        translationX,
-        velocityX,
-        snapPoints
-      );
-      translateX.value = withTiming(snapPoint);
-    },
-  });
-
-  const tapGestureEventHandler = useAnimatedGestureHandler<TapGestureHandlerGestureEvent>(
-    {
-      onFail: () => {
-        itemOpacity.value = 1;
-      },
-      onCancel: () => {
-        itemOpacity.value = 1;
-      },
-      onEnd: () => {
-        if (translateX.value === rightSnapPoint) {
-          translateX.value = withTiming(0);
-        } else {
-          itemOpacity.value = 0.7;
-          runOnJS(navigation.navigate)({
-            name: "show",
-            params: { id: _id, dateTitle: logDate },
-          });
-        }
-      },
-      onFinish: () => {
-        itemOpacity.value = withDelay(100, withTiming(1)) as 1;
-      },
-    }
-  );
-
-  const animatedWorkoutLogItemStyle = useAnimatedStyle(() => ({
-    height: workoutLogItemHeight.value,
-  }));
   const animatedIconStyle = useAnimatedStyle(() => ({
     fontSize: Math.min(maxIconSize, absoluteTranslateX.value / 4.0),
   }));
@@ -128,18 +95,9 @@ export function WorkoutLogItem({
     fontSize: deleteButtonFontSize.value,
   }));
 
-  const handleDeleteWorkoutLog = React.useCallback(() => {
-    const delay: number = 300;
-    workoutLogItemHeight.value = withTiming(0, { duration: delay });
-    itemOpacity.value = withTiming(0, { duration: delay }) as 0;
-    setTimeout(() => {
-      dispatch(deleteWorkoutLog(_id));
-    }, delay + 50);
-  }, [_id]);
-
   return (
-    <Animated.View style={[styles.workoutLogItem, animatedWorkoutLogItemStyle]}>
-      <PanGestureHandler onGestureEvent={panGestureEventHandler}>
+    <Animated.View style={[styles.workoutLogItem, animatedCollapseItemStyle]}>
+      <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
         <Animated.View style={styles.workoutLogItemTapArea}>
           <TapGestureHandler onGestureEvent={tapGestureEventHandler}>
             <Animated.View
@@ -156,7 +114,7 @@ export function WorkoutLogItem({
       </PanGestureHandler>
       <Animated.View style={animatedHiddenAreaStyle}>
         <Button
-          onPress={handleDeleteWorkoutLog}
+          onPress={collapseTransition}
           style={styles.deleteButton}
           color="red"
         >
