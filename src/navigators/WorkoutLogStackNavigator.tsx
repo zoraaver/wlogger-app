@@ -3,11 +3,13 @@ import * as React from "react";
 import { StyleSheet } from "react-native";
 import { WorkoutLogScreen } from "../screens/WorkoutLogScreen";
 import { WorkoutLogsScreen } from "../screens/WorkoutLogsScreen";
+import { WorkoutLogVideoScreen } from "../screens/WorkoutLogVideoScreen";
 import { BalsamiqSans, infoColor } from "../util/constants";
 
 export type WorkoutLogStackParamList = {
   index: undefined;
   show: { id: string; dateTitle: string };
+  showVideo: { videoUrl: string; videoTitle: string };
 };
 
 const Stack = createStackNavigator<WorkoutLogStackParamList>();
@@ -31,6 +33,16 @@ export function WorkoutLogStackNavigator() {
         options={({ route }) => ({
           title: route.params.dateTitle,
           headerBackTitle: "Logs",
+          headerStyle: styles.screenHeader,
+          headerTitleStyle: styles.screenHeaderTitle,
+          headerTitleAlign: "center",
+        })}
+      />
+      <Stack.Screen
+        component={WorkoutLogVideoScreen}
+        name="showVideo"
+        options={({ route }) => ({
+          title: route.params.videoTitle,
           headerStyle: styles.screenHeader,
           headerTitleStyle: styles.screenHeaderTitle,
           headerTitleAlign: "center",
