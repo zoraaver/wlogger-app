@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/core";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Animated, {
+  interpolate,
   useAnimatedStyle,
   useDerivedValue,
 } from "react-native-reanimated";
@@ -58,18 +59,20 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
   } = useVerticalCollapseTransition(rowInitialHeight, 300, handleDeleteVideo);
 
   const buttonFontSize = useDerivedValue(() =>
-    Math.min(
-      absoluteTranslateX.value / (rightMostSnapPoint / maxButtonFontSize),
-      maxButtonFontSize
+    interpolate(
+      absoluteTranslateX.value,
+      [0, rightMostSnapPoint],
+      [0, maxButtonFontSize]
     )
   );
-  const hiddenAreaOpacity = useDerivedValue(
-    () => 0.5 + 0.5 * (absoluteTranslateX.value / rightMostSnapPoint)
+  const hiddenAreaOpacity = useDerivedValue(() =>
+    interpolate(absoluteTranslateX.value, [0, rightMostSnapPoint], [0.5, 1])
   );
   const iconFontSize = useDerivedValue(() =>
-    Math.min(
-      maxIconSize,
-      absoluteTranslateX.value / (rightMostSnapPoint / maxIconSize)
+    interpolate(
+      absoluteTranslateX.value,
+      [0, rightMostSnapPoint],
+      [0, maxIconSize]
     )
   );
 

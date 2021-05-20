@@ -11,8 +11,8 @@ import {
 import { Helvetica } from "../util/constants";
 import { Button } from "./Button";
 import Animated, {
+  interpolate,
   useAnimatedStyle,
-  useDerivedValue,
 } from "react-native-reanimated";
 import {
   PanGestureHandler,
@@ -32,8 +32,8 @@ interface WorkoutLogItemProps {
 const workoutLogItemInitialHeight = 80;
 const maxDeleteButtonFontSize = 10;
 const maxIconSize = 25;
-const rightSnapPoint = -100;
-const snapPoints: number[] = [rightSnapPoint, 0];
+const rightSnapPoint = 100;
+const snapPoints: number[] = [-rightSnapPoint, 0];
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
@@ -73,15 +73,12 @@ export function WorkoutLogItem({
     }
   );
 
-  const deleteButtonOpacity = useDerivedValue(
-    () => absoluteTranslateX.value / 100.0
-  );
-  const deleteButtonFontSize = useDerivedValue(() =>
-    Math.min(maxDeleteButtonFontSize, absoluteTranslateX.value / 10.0)
-  );
-
   const animatedIconStyle = useAnimatedStyle(() => ({
-    fontSize: Math.min(maxIconSize, absoluteTranslateX.value / 4.0),
+    fontSize: interpolate(
+      absoluteTranslateX.value,
+      [0, rightSnapPoint],
+      [0, maxIconSize]
+    ),
   }));
   const animatedLogHeaderStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -89,10 +86,18 @@ export function WorkoutLogItem({
   }));
   const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
     width: absoluteTranslateX.value,
-    opacity: deleteButtonOpacity.value,
+    opacity: interpolate(
+      absoluteTranslateX.value,
+      [0, rightSnapPoint],
+      [0.5, 1]
+    ),
   }));
   const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: deleteButtonFontSize.value,
+    fontSize: interpolate(
+      absoluteTranslateX.value,
+      [0, rightSnapPoint],
+      [0, maxDeleteButtonFontSize]
+    ),
   }));
 
   return (
