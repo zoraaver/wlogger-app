@@ -32,8 +32,8 @@ interface WorkoutLogItemProps {
 const workoutLogItemInitialHeight = 80;
 const maxDeleteButtonFontSize = 10;
 const maxIconSize = 25;
-const rightSnapPoint = 100;
-const snapPoints: number[] = [-rightSnapPoint, 0];
+const rightSnapPoint = -100;
+const snapPoints: number[] = [rightSnapPoint, 0];
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
@@ -45,11 +45,9 @@ export function WorkoutLogItem({
   >();
   const dispatch = useAppDispatch();
 
-  const {
-    panGestureEventHandler,
-    absoluteTranslateX,
-    translateX,
-  } = useHorizontalSwipeHandler(snapPoints);
+  const { panGestureEventHandler, translateX } = useHorizontalSwipeHandler(
+    snapPoints
+  );
 
   const {
     animatedCollapseItemStyle,
@@ -75,28 +73,31 @@ export function WorkoutLogItem({
 
   const animatedIconStyle = useAnimatedStyle(() => ({
     fontSize: interpolate(
-      absoluteTranslateX.value,
-      [0, rightSnapPoint],
-      [0, maxIconSize]
+      translateX.value,
+      [rightSnapPoint, 0],
+      [maxIconSize, 0]
     ),
   }));
+
   const animatedLogHeaderStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
     opacity: itemOpacity.value,
   }));
+
   const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
-    width: absoluteTranslateX.value,
-    opacity: interpolate(
-      absoluteTranslateX.value,
-      [0, rightSnapPoint],
-      [0.5, 1]
+    width: interpolate(
+      translateX.value,
+      [rightSnapPoint, 0],
+      [-rightSnapPoint, 0]
     ),
+    opacity: interpolate(translateX.value, [rightSnapPoint, 0], [1, 0.5]),
   }));
+
   const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
     fontSize: interpolate(
-      absoluteTranslateX.value,
-      [0, rightSnapPoint],
-      [0, maxDeleteButtonFontSize]
+      translateX.value,
+      [rightSnapPoint, 0],
+      [maxDeleteButtonFontSize, 0]
     ),
   }));
 

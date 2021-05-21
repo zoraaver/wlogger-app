@@ -47,7 +47,7 @@ export function useKeyboard(
 
 export function useHorizontalSwipeHandler(snapPoints: number[]) {
   const translateX = useSharedValue(0);
-  const absoluteTranslateX = useDerivedValue(() => Math.abs(translateX.value));
+
   const panGestureEventHandler = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
     { startingTranslateX: number }
@@ -67,7 +67,7 @@ export function useHorizontalSwipeHandler(snapPoints: number[]) {
       );
     },
   });
-  return { panGestureEventHandler, translateX, absoluteTranslateX };
+  return { panGestureEventHandler, translateX };
 }
 
 export function useVerticalCollapseTransition(

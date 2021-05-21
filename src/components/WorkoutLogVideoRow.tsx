@@ -35,8 +35,8 @@ interface WorkoutLogVideo {
   };
 }
 
-const rightMostSnapPoint = 160;
-const snapPoints: number[] = [-rightMostSnapPoint, 0];
+const rightMostSnapPoint = -160;
+const snapPoints: number[] = [rightMostSnapPoint, 0];
 const maxButtonFontSize = 10;
 const maxIconSize = 25;
 const rowInitialHeight = 70;
@@ -47,11 +47,9 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
   >();
   const dispatch = useAppDispatch();
 
-  const {
-    absoluteTranslateX,
-    translateX,
-    panGestureEventHandler,
-  } = useHorizontalSwipeHandler(snapPoints);
+  const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
+    snapPoints
+  );
 
   const {
     animatedCollapseItemStyle,
@@ -60,27 +58,27 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
 
   const buttonFontSize = useDerivedValue(() =>
     interpolate(
-      absoluteTranslateX.value,
-      [0, rightMostSnapPoint],
-      [0, maxButtonFontSize]
+      translateX.value,
+      [rightMostSnapPoint, 0],
+      [maxButtonFontSize, 0]
     )
   );
   const hiddenAreaOpacity = useDerivedValue(() =>
-    interpolate(absoluteTranslateX.value, [0, rightMostSnapPoint], [0.5, 1])
+    interpolate(translateX.value, [rightMostSnapPoint, 0], [1, 0.5])
   );
   const iconFontSize = useDerivedValue(() =>
-    interpolate(
-      absoluteTranslateX.value,
-      [0, rightMostSnapPoint],
-      [0, maxIconSize]
-    )
+    interpolate(translateX.value, [rightMostSnapPoint, 0], [maxIconSize, 0])
   );
 
   const animatedVideoRowStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
   const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
-    width: absoluteTranslateX.value,
+    width: interpolate(
+      translateX.value,
+      [rightMostSnapPoint, 0],
+      [-rightMostSnapPoint, 0]
+    ),
     opacity: hiddenAreaOpacity.value,
   }));
   const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
