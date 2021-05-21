@@ -9,10 +9,10 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
-import EncryptedStorage from "react-native-encrypted-storage";
 import Video from "react-native-video";
 import { HomeTabParamList } from "../navigators/HomeTabNavigator";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
+import { getToken } from "../util/util";
 import { LoadingScreen } from "./LoadingScreen";
 
 type WorkoutLogVideoScreenRouteProp = RouteProp<
@@ -34,7 +34,7 @@ export function WorkoutLogVideoScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      EncryptedStorage.getItem("token").then((result) => {
+      getToken().then((result) => {
         setToken(result ?? "");
       });
     }, [])
