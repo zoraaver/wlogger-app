@@ -1,3 +1,4 @@
+import EncryptedStorage from "react-native-encrypted-storage";
 import {
   weekData,
   weightUnit,
@@ -68,4 +69,8 @@ export function extractTokenFromSetCookieHeaders(
     if (fieldName === "token") return token;
   }
   throw new Error("Token not found in set cookie headers");
+}
+
+export function getToken() {
+  return EncryptedStorage.getItem("token");
 }
