@@ -47,7 +47,11 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app would like to save videos to your device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app would like to save videos to your device.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BalsamiqSans-Regular.ttf</string>
@@ -67,6 +71,10 @@
 		<string>Octicons.ttf</string>
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
