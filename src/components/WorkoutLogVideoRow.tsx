@@ -1,7 +1,8 @@
 import * as React from "react";
-import { StyleSheet, Text } from "react-native";
+import { Alert, Platform, StyleSheet, Text } from "react-native";
 import {
   deleteSetVideo,
+  downloadFormVideo,
   exerciseLogData,
   setLogData,
   workoutLogData,
@@ -18,6 +19,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useDerivedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { AnimatedIonicon } from "./AnimatedIonicon";
@@ -94,6 +96,9 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
     fontSize: iconFontSize.value,
   }));
 
+  const videoUrl = `${baseURL}${workoutLogUrl}/${set.workoutLogId}/exercises/${set.exerciseId}/sets/${set._id}/video`;
+  const videoTitle = `${set.exerciseName} ${set.repetitions} x ${set.weight} ${set.unit}`;
+
   function handleDeleteVideo() {
     dispatch(
       deleteSetVideo({
@@ -104,8 +109,31 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
     );
   }
 
-  const videoUrl = `${baseURL}${workoutLogUrl}/${set.workoutLogId}/exercises/${set.exerciseId}/sets/${set._id}/video`;
-  const videoTitle = `${set.exerciseName} ${set.repetitions} x ${set.weight} ${set.unit}`;
+  function handleDownloadVideo() {
+    dispatch(
+      downloadFormVideo({
+        fileExtension: set.formVideoExtension,
+        videoUrl,
+        videoTitle,
+      })
+    );
+    showDownloadAlert();
+  }
+
+  function showDownloadAlert() {
+    const message = Platform.select({
+      ios: "the video will appear in the photos app once completed.",
+      android:
+        "the video will appear under Videos > Pictures in the files app once completed.",
+    });
+    const hideButtons = () => (translateX.value = withTiming(0));
+    Alert.alert(
+      "Download started",
+      `Downloading ${videoTitle}: ${message}`,
+      [{ text: "Ok", onPress: hideButtons }],
+      { cancelable: true, onDismiss: hideButtons }
+    );
+  }
 
   return (
     <Animated.View style={[styles.wrapper, animatedCollapseItemStyle]}>
@@ -132,7 +160,7 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
         </Animated.View>
       </PanGestureHandler>
       <Animated.View style={[styles.hiddenArea, animatedHiddenAreaStyle]}>
-        <Button onPress={() => {}} style={styles.button}>
+        <Button onPress={handleDownloadVideo} style={styles.button}>
           <AnimatedIonicon
             name="download-outline"
             color="white"
