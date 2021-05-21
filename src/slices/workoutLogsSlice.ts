@@ -1,3 +1,4 @@
+import CameraRoll from "@react-native-community/cameraroll";
 import {
   createAsyncThunk,
   createSelector,
@@ -5,8 +6,11 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
+import { Platform } from "react-native";
+import RNFetchBlob from "rn-fetch-blob";
 import { RootState } from "..";
 import { API } from "../config/axios.config";
+import { getToken } from "../util/util";
 import { weightUnit } from "./workoutPlansSlice";
 
 export const workoutLogUrl = "/workoutLogs";
@@ -66,8 +70,55 @@ interface S3SignedPostForm {
   fields: { [Key: string]: string };
 }
 
-type videoFileExtension = "mp4" | "mkv" | "mov";
-const validVideoFileExtensions: videoFileExtension[] = ["mov", "mp4", "mkv"];
+type videoFileExtension = "mp4" | "avi" | "mov";
+const validVideoFileExtensions: videoFileExtension[] = ["mov", "mp4", "avi"];
+
+interface downloadVideoArgs {
+  videoUrl: string;
+  fileExtension: string | undefined;
+  videoTitle: string;
+}
+
+export const downloadFormVideo = createAsyncThunk(
+  "workoutLogs/downloadFormVideo",
+  async ({ videoUrl, fileExtension, videoTitle }: downloadVideoArgs) => {
+    try {
+      const pictureDir = RNFetchBlob.fs.dirs.PictureDir;
+      const token = await getToken();
+      if (!token) throw new Error("No token found");
+      const result = await RNFetchBlob.config({
+        fileCache: Platform.OS === "ios",
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          path: `${pictureDir}/${videoTitle}.${fileExtension}`,
+        },
+        followRedirect: false,
+        appendExt: fileExtension,
+        IOSBackgroundTask: true,
+        overwrite: false,
+      }).fetch("GET", videoUrl, { Authorisation: token });
+      if (Platform.OS === "ios") {
+        await CameraRoll.save(result.data, { type: "video" });
+      }
+      result.flush();
+    } catch (error) {}
+  }
+);
+
+export const cleanCacheDirectory = createAsyncThunk(
+  "workoutLogs/clearCacheVideos",
+  async () => {
+    if (Platform.OS === "ios") {
+      try {
+        const cachePath = RNFetchBlob.fs.dirs.DocumentDir + "/RNFetchBlob_tmp";
+        if (await RNFetchBlob.fs.isDir(cachePath)) {
+          RNFetchBlob.fs.unlink(cachePath);
+        }
+      } catch (error) {}
+    }
+  }
+);
 
 export type WorkoutLogPosition = { setIndex: number; exerciseIndex: number };
 type logVideoFile = WorkoutLogPosition & { file: any };
@@ -416,7 +467,6 @@ const slice = createSlice({
       }
     );
     builder.addCase(deleteWorkoutLog.rejected, (state, action) => {
-      console.error(action.error.message);
       state.error = "Deleting workout failed";
       state.success = undefined;
     });
