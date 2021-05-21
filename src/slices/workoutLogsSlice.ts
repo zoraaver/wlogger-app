@@ -100,8 +100,8 @@ export const downloadFormVideo = createAsyncThunk(
       }).fetch("GET", videoUrl, { Authorisation: token });
       if (Platform.OS === "ios") {
         await CameraRoll.save(result.data, { type: "video" });
+        result.flush();
       }
-      result.flush();
     } catch (error) {}
   }
 );
