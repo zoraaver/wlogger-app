@@ -4,6 +4,7 @@ import { LoadingScreen } from "../screens/LoadingScreen";
 import LoginScreen from "../screens/LoginScreen";
 import { validateUser } from "../slices/usersSlice";
 import { HomeTabNavigator } from "../navigators/HomeTabNavigator";
+import { cleanCacheDirectory } from "../slices/workoutLogsSlice";
 
 export function App() {
   const dispatch = useAppDispatch();
@@ -13,6 +14,7 @@ export function App() {
 
   React.useEffect(() => {
     dispatch(validateUser());
+    dispatch(cleanCacheDirectory());
   }, []);
 
   switch (authenticationStatus) {
