@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect } from "react";
 import {
   Keyboard,
   KeyboardEventListener,
@@ -72,9 +73,7 @@ export function useHorizontalSwipeHandler(snapPoints: number[]) {
 
 export function useVerticalCollapseTransition(
   initialHeight: number,
-  duration: number,
-  callback?: (...args: any[]) => any,
-  delay?: number
+  duration: number
 ) {
   const height = useSharedValue(initialHeight);
 
@@ -87,7 +86,10 @@ export function useVerticalCollapseTransition(
     opacity: opacity.value,
   }));
 
-  const collapseTransition = () => {
+  const collapseTransition = (
+    callback?: (...args: any[]) => any,
+    delay?: number
+  ) => {
     height.value = withTiming(0, {
       duration,
       easing: Easing.inOut(Easing.ease),
@@ -133,4 +135,15 @@ export function useSwipeableTapHandler<TapCallBackArgs>(
     }
   );
   return { tapGestureEventHandler, itemOpacity };
+}
+
+export function useHideTabBarInNestedStack() {
+  const navigation = useNavigation();
+  useFocusEffect(
+    useCallback(() => {
+      navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: false });
+      return () =>
+        navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: true });
+    }, [])
+  );
 }
