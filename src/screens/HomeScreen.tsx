@@ -1,10 +1,15 @@
-import { useFocusEffect } from "@react-navigation/core";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useFocusEffect, useNavigation } from "@react-navigation/core";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { ExerciseTable } from "../containers/ExerciseTable";
+import { HomeTabParamList } from "../navigators/HomeTabNavigator";
+import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
 import { getNextWorkout, workoutData } from "../slices/workoutsSlice";
 import {
@@ -62,14 +67,23 @@ export function HomeScreen() {
   );
 }
 
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<HomeTabParamList, "Logs">,
+  StackNavigationProp<WorkoutLogStackParamList>
+>;
+
 function BeginWorkoutButton({ workout }: { workout?: workoutData }) {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   if (!workout || !workout.date) return null;
   const workoutDate: Date = new Date(workout.date as string);
   const buttonText: string = isToday(workoutDate)
     ? "Begin workout"
     : "Log a separate workout";
+  function handleBeginWorkout() {
+    navigation.navigate("Logs", { screen: "new", params: undefined });
+  }
   return (
-    <Button color={successColor} onPress={() => {}}>
+    <Button color={successColor} onPress={handleBeginWorkout}>
       <Text style={styles.buttonText}>{buttonText}</Text>
     </Button>
   );
