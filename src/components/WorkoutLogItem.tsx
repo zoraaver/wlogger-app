@@ -52,14 +52,7 @@ export function WorkoutLogItem({
   const {
     animatedCollapseItemStyle,
     collapseTransition,
-  } = useVerticalCollapseTransition(
-    workoutLogItemInitialHeight,
-    300,
-    () => {
-      dispatch(deleteWorkoutLog(_id));
-    },
-    30
-  );
+  } = useVerticalCollapseTransition(workoutLogItemInitialHeight, 300);
 
   const { tapGestureEventHandler, itemOpacity } = useSwipeableTapHandler(
     translateX,
@@ -120,7 +113,11 @@ export function WorkoutLogItem({
       </PanGestureHandler>
       <Animated.View style={animatedHiddenAreaStyle}>
         <Button
-          onPress={collapseTransition}
+          onPress={() =>
+            collapseTransition(() => {
+              dispatch(deleteWorkoutLog(_id));
+            }, 30)
+          }
           style={styles.deleteButton}
           color="red"
         >

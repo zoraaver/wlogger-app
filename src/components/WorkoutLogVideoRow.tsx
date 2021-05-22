@@ -56,7 +56,7 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
   const {
     animatedCollapseItemStyle,
     collapseTransition,
-  } = useVerticalCollapseTransition(rowInitialHeight, 300, handleDeleteVideo);
+  } = useVerticalCollapseTransition(rowInitialHeight, 300);
 
   const buttonFontSize = useDerivedValue(() =>
     interpolate(
@@ -172,7 +172,11 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
             Download
           </Animated.Text>
         </Button>
-        <Button onPress={collapseTransition} style={styles.button} color="red">
+        <Button
+          onPress={() => collapseTransition(handleDeleteVideo)}
+          style={styles.button}
+          color="red"
+        >
           <AnimatedIonicon
             name="trash"
             color="white"
