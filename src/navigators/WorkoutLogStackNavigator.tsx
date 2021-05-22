@@ -1,6 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import * as React from "react";
 import { StyleSheet } from "react-native";
+import { NewWorkoutLogScreen } from "../screens/NewWorkoutLogScreen";
 import { WorkoutLogScreen } from "../screens/WorkoutLogScreen";
 import { WorkoutLogsScreen } from "../screens/WorkoutLogsScreen";
 import { WorkoutLogVideoScreen } from "../screens/WorkoutLogVideoScreen";
@@ -10,6 +11,7 @@ export type WorkoutLogStackParamList = {
   index: undefined;
   show: { id: string; dateTitle: string };
   showVideo: { videoUrl: string; videoTitle: string };
+  new: undefined;
 };
 
 const Stack = createStackNavigator<WorkoutLogStackParamList>();
@@ -45,6 +47,11 @@ export function WorkoutLogStackNavigator() {
         options={({ route }) => ({
           title: route.params.videoTitle,
         })}
+      />
+      <Stack.Screen
+        component={NewWorkoutLogScreen}
+        name="new"
+        options={{ title: "New Log" }}
       />
     </Stack.Navigator>
   );
