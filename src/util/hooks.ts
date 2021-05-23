@@ -1,5 +1,5 @@
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   Keyboard,
   KeyboardEventListener,
@@ -146,4 +146,25 @@ export function useHideTabBarInNestedStack() {
         navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: true });
     }, [])
   );
+}
+
+export function useInterval(
+  callback: () => void,
+  delayInMilliSeconds?: number
+) {
+  const savedCallback = useRef(callback);
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    if (delayInMilliSeconds !== undefined) {
+      function tick() {
+        savedCallback.current();
+      }
+      const intervalId = setInterval(tick, delayInMilliSeconds);
+      return () => clearInterval(intervalId);
+    }
+  }, [delayInMilliSeconds]);
 }
