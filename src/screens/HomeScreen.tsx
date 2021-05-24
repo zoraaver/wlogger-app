@@ -20,10 +20,16 @@ import {
 } from "../util/constants";
 import { isToday, isTomorrow } from "../util/util";
 
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<HomeTabParamList, "Logs">,
+  StackNavigationProp<WorkoutLogStackParamList>
+>;
+
 export function HomeScreen() {
   const dispatch = useAppDispatch();
   const nextWorkout = useAppSelector((state) => state.workouts.nextWorkout);
   const message = useAppSelector((state) => state.workouts.message);
+  const navigation = useNavigation<HomeScreenNavigationProp>();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -31,6 +37,10 @@ export function HomeScreen() {
       dispatch(getCurrentPlan());
     }, [])
   );
+
+  function handleBeginWorkout() {
+    navigation.navigate("Logs", { screen: "new", params: undefined });
+  }
 
   return (
     <>
@@ -51,14 +61,17 @@ export function HomeScreen() {
                   <Button onPress={() => {}} color={successColor}>
                     <Text style={styles.buttonText}>Start a new plan</Text>
                   </Button>
-                  <Button onPress={() => {}} color={successColor}>
+                  <Button onPress={handleBeginWorkout} color={successColor}>
                     <Text style={styles.buttonText}>Log a workout</Text>
                   </Button>
                 </View>
               )
             )}
             <View style={styles.beginWorkout}>
-              <BeginWorkoutButton workout={nextWorkout} />
+              <BeginWorkoutButton
+                workout={nextWorkout}
+                handleBeginWorkout={handleBeginWorkout}
+              />
             </View>
           </View>
         </ScrollView>
@@ -67,21 +80,20 @@ export function HomeScreen() {
   );
 }
 
-type HomeScreenNavigationProp = CompositeNavigationProp<
-  BottomTabNavigationProp<HomeTabParamList, "Logs">,
-  StackNavigationProp<WorkoutLogStackParamList>
->;
+interface BeginWorkoutButtonProps {
+  workout?: workoutData;
+  handleBeginWorkout: () => void;
+}
 
-function BeginWorkoutButton({ workout }: { workout?: workoutData }) {
-  const navigation = useNavigation<HomeScreenNavigationProp>();
+function BeginWorkoutButton({
+  workout,
+  handleBeginWorkout,
+}: BeginWorkoutButtonProps) {
   if (!workout || !workout.date) return null;
   const workoutDate: Date = new Date(workout.date as string);
   const buttonText: string = isToday(workoutDate)
     ? "Begin workout"
     : "Log a separate workout";
-  function handleBeginWorkout() {
-    navigation.navigate("Logs", { screen: "new", params: undefined });
-  }
   return (
     <Button color={successColor} onPress={handleBeginWorkout}>
       <Text style={styles.buttonText}>{buttonText}</Text>
