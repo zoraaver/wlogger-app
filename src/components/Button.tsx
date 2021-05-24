@@ -14,6 +14,7 @@ interface ButtonProps {
   color?: string;
   onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 }
 
 export function Button({
@@ -21,12 +22,14 @@ export function Button({
   color = primaryColor,
   onPress,
   style,
+  disabled,
 }: ButtonProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       style={[styles.button, { backgroundColor: color }, style]}
       onPress={onPress}
+      disabled={disabled}
     >
       {children}
     </TouchableOpacity>
