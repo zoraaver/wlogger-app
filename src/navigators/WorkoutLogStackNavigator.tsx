@@ -31,6 +31,7 @@ export function WorkoutLogStackNavigator() {
         name="index"
         options={{
           headerTitle: "Logs",
+          headerLeft: () => null,
         }}
       />
       <Stack.Screen
@@ -51,7 +52,7 @@ export function WorkoutLogStackNavigator() {
       <Stack.Screen
         component={NewWorkoutLogScreen}
         name="new"
-        options={{ title: "New Log" }}
+        options={{ title: "New Log", headerLeft: () => null }}
       />
     </Stack.Navigator>
   );
