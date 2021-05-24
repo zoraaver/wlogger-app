@@ -1,272 +1,109 @@
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useFocusEffect, useNavigation } from "@react-navigation/core";
 import * as React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  NativeSyntheticEvent,
-  NativeTouchEvent,
-} from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
-import { DismissKeyboard } from "../components/DismissKeyboard";
-import { EntryData } from "../slices/workoutLogsSlice";
-import { Helvetica, successColor } from "../util/constants";
-import { useHideTabBarInNestedStack, useInterval } from "../util/hooks";
-import { renderRestInterval } from "../util/util";
-import Ionicon from "react-native-vector-icons/Ionicons";
-import { Picker } from "@react-native-picker/picker";
+import { WorkoutLogForm } from "../components/WorkoutLogForm";
+import { WorkoutLogTable } from "../containers/WorkoutLogTable";
+import { HomeTabParamList } from "../navigators/HomeTabNavigator";
+import {
+  clearEditWorkoutLog,
+  postWorkoutLog,
+} from "../slices/workoutLogsSlice";
+import { BalsamiqSans, Helvetica, successColor } from "../util/constants";
+import { useHideTabBarInNestedStack } from "../util/hooks";
+
+type NewWorkoutLogScreenNavigationProp = BottomTabNavigationProp<HomeTabParamList>;
 
 export function NewWorkoutLogScreen() {
   useHideTabBarInNestedStack();
-  const [timeElapsedSinceLastSet, setTimeElapsedSinceLastSet] = React.useState(
-    0
-  );
-  const [setInProgress, setSetInProgress] = React.useState(false);
 
-  const [formData, setFormData] = React.useState<EntryData>({
-    name: "",
-    repetitions: 0,
-    weight: 0,
-    unit: "kg",
-    restInterval: Date.now(),
-  });
+  const navigation = useNavigation<NewWorkoutLogScreenNavigationProp>();
+  const dispatch = useAppDispatch();
 
-  useInterval(
-    () => {
-      setTimeElapsedSinceLastSet(Date.now() - formData.restInterval);
-    },
-    setInProgress ? undefined : 1000
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(clearEditWorkoutLog());
+    }, [])
   );
 
-  function handleWeightChange(newWeight: string): void {
-    const weight = Number(newWeight);
-    if (!isNaN(weight) && weight >= 0) {
-      setFormData({ ...formData, weight });
-    }
+  const workoutLog = useAppSelector(
+    (state) => state.workoutLogs.editWorkoutLog
+  );
+
+  function handleCancelWorkout() {
+    Alert.alert(
+      "Abort workout log",
+      "Are you sure you want to abort this workout log? All changes will be lost.",
+      [
+        {
+          text: "Ok",
+          onPress: () =>
+            navigation.reset({ index: 0, routes: [{ name: "Home" }] }),
+        },
+        { text: "Cancel" },
+      ]
+    );
   }
 
-  function handleRepetitionsChange(newRepetitions: string): void {
-    const repetitions = Number(newRepetitions);
-    if (
-      !isNaN(repetitions) &&
-      repetitions >= 0 &&
-      Number.isInteger(repetitions)
-    ) {
-      setFormData({ ...formData, repetitions });
-    }
+  async function handleLogWorkout() {
+    await dispatch(postWorkoutLog(workoutLog));
+    navigation.navigate("Logs", { screen: "index" });
   }
 
   return (
-    <DismissKeyboard>
-      <SafeAreaView
-        style={styles.newWorkoutLogScreen}
-        edges={["bottom", "left", "right"]}
-      >
-        <View style={styles.timer}>
-          <Text style={styles.timerText}>
-            {renderRestInterval(timeElapsedSinceLastSet / 1000)}
-          </Text>
-          <View style={styles.timerButtons}>
-            <Button
-              onPress={() => {
-                setFormData({ ...formData, restInterval: Date.now() });
-              }}
-              style={styles.button}
-            >
-              <Text style={styles.buttonText}>Reset timer</Text>
-            </Button>
-            <BeginSetButton
-              setInProgress={setInProgress}
-              setSetInProgress={setSetInProgress}
-            />
-          </View>
-        </View>
-        <View style={styles.inputArea}>
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Exercise: </Text>
-            <TextInput
-              style={styles.logInput}
-              placeholder="Exercise name"
-              placeholderTextColor="grey"
-              value={formData.name}
-              clearButtonMode="while-editing"
-              returnKeyType="next"
-              onChangeText={(name) => setFormData({ ...formData, name })}
-            />
-          </View>
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Weight: </Text>
-            <TextInput
-              style={[styles.logInput, styles.logNumberInput]}
-              value={formData.weight ? formData.weight.toString() : ""}
-              onChangeText={handleWeightChange}
-              keyboardType="numeric"
-              returnKeyType="done"
-            />
-            <AddRemoveButtonPair
-              onAddPress={() => {
-                handleWeightChange((formData.weight + 1).toString());
-              }}
-              onRemovePress={() => {
-                handleWeightChange((formData.weight - 1).toString());
-              }}
-            />
-          </View>
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Reps: </Text>
-            <TextInput
-              style={[styles.logInput, styles.logNumberInput]}
-              value={
-                formData.repetitions ? formData.repetitions.toString() : ""
-              }
-              onChangeText={handleRepetitionsChange}
-              keyboardType="numeric"
-              returnKeyType="done"
-            />
-            <AddRemoveButtonPair
-              onAddPress={() => {
-                handleRepetitionsChange((formData.repetitions + 1).toString());
-              }}
-              onRemovePress={() => {
-                handleRepetitionsChange((formData.repetitions - 1).toString());
-              }}
-            />
-          </View>
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Unit: </Text>
-            <Picker
-              selectedValue={formData.unit}
-              onValueChange={(unit) => setFormData({ ...formData, unit })}
-              style={{ flexGrow: 1, backgroundColor: "white", height: 50 }}
-              itemStyle={styles.buttonText}
-              dropdownIconColor="black"
-              mode="dropdown"
-            >
-              <Picker.Item label="kg" value="kg" />
-              <Picker.Item label="lb" value="lb" />
-            </Picker>
-          </View>
-        </View>
-      </SafeAreaView>
-    </DismissKeyboard>
-  );
-}
-
-interface BeginSetButtonProps {
-  setInProgress: boolean;
-  setSetInProgress: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-function BeginSetButton({
-  setInProgress,
-  setSetInProgress,
-}: BeginSetButtonProps) {
-  return (
-    <Button
-      onPress={() => setSetInProgress(!setInProgress)}
-      color={setInProgress ? "red" : successColor}
-      style={styles.button}
+    <SafeAreaView
+      style={styles.newWorkoutLogScreen}
+      edges={["bottom", "left", "right"]}
     >
-      <Text style={styles.buttonText}>
-        {setInProgress ? "End set" : "Begin set"}
-      </Text>
-    </Button>
-  );
-}
-
-interface AddRemoveButtonProps {
-  onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-  action: "add" | "remove";
-}
-
-function AddRemoveButton({ onPress, action }: AddRemoveButtonProps) {
-  return (
-    <Button
-      style={styles.addRemoveButtons}
-      onPress={onPress}
-      color={action === "add" ? successColor : "red"}
-    >
-      <Ionicon name={action} size={25} color="white" />
-    </Button>
-  );
-}
-
-interface AddRemoveButtonPairProps {
-  onAddPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-  onRemovePress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-}
-
-function AddRemoveButtonPair({
-  onAddPress,
-  onRemovePress,
-}: AddRemoveButtonPairProps) {
-  return (
-    <>
-      <AddRemoveButton action="add" onPress={onAddPress} />
-      <AddRemoveButton action="remove" onPress={onRemovePress} />
-    </>
+      <ScrollView>
+        <WorkoutLogForm />
+        <Text style={styles.tableTitle}>Logged sets:</Text>
+        <WorkoutLogTable workoutLog={workoutLog} />
+        <View style={styles.finishWorkoutArea}>
+          <Button
+            onPress={handleLogWorkout}
+            color={successColor}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Log workout</Text>
+          </Button>
+          <Button
+            onPress={handleCancelWorkout}
+            color="red"
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Abort workout</Text>
+          </Button>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   newWorkoutLogScreen: {
     flex: 1,
-    alignItems: "center",
     backgroundColor: "powderblue",
   },
-  timer: {
-    height: "25%",
-    width: "100%",
-    padding: 20,
-    alignItems: "center",
+  tableTitle: {
+    alignSelf: "center",
+    fontSize: 25,
+    fontFamily: BalsamiqSans,
+    paddingVertical: 20,
   },
-  timerText: {
-    fontSize: 30,
+  buttonText: {
     fontFamily: Helvetica,
-    borderRadius: 5,
-    padding: 5,
-    color: "black",
-  },
-  buttonText: { color: "white", fontFamily: Helvetica, fontSize: 20 },
-  timerButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
+    color: "white",
+    fontSize: 18,
   },
   button: {
-    flex: 1,
-    marginHorizontal: 10,
-    height: 50,
+    marginVertical: 10,
   },
-  logInput: {
-    flexGrow: 1,
-    height: 50,
-    borderWidth: 0.5,
-    borderRadius: 10,
-    backgroundColor: "white",
-    paddingLeft: 15,
-    fontFamily: Helvetica,
-    fontSize: 20,
-  },
-  inputArea: {
-    flex: 1,
-    width: "100%",
-    padding: 20,
-  },
-  inputSection: {
-    flexDirection: "row",
-    alignItems: "center",
+  finishWorkoutArea: {
+    padding: 10,
     justifyContent: "space-between",
-    paddingVertical: 10,
   },
-  inputLabel: {
-    width: 100,
-    fontSize: 20,
-    fontFamily: Helvetica,
-    paddingRight: 10,
-  },
-  logNumberInput: { width: 50, flexGrow: undefined },
-  addRemoveButtons: { height: 50, width: 50 },
 });
