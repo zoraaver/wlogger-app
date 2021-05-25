@@ -13,28 +13,22 @@ import Ionicon from "react-native-vector-icons/Ionicons";
 import { addSet, EntryData } from "../slices/workoutLogsSlice";
 import { Helvetica, successColor } from "../util/constants";
 import { useAppDispatch } from "..";
-import { useFocusEffect } from "@react-navigation/core";
-
-const initialFormData = (): EntryData => ({
-  name: "",
-  repetitions: 0,
-  weight: 0,
-  unit: "kg",
-  restInterval: Date.now(),
-});
+import { useNavigation } from "@react-navigation/core";
+import { HomeNavigation } from "../navigators/HomeTabNavigator";
 
 export function WorkoutLogForm() {
   const [setInProgress, setSetInProgress] = React.useState(false);
   const [exerciseNameError, setExerciseNameError] = React.useState("");
   const dispatch = useAppDispatch();
 
-  const [formData, setFormData] = React.useState<EntryData>(initialFormData());
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setFormData(initialFormData());
-    }, [])
-  );
+  const [formData, setFormData] = React.useState<EntryData>({
+    name: "",
+    repetitions: 0,
+    weight: 0,
+    unit: "kg",
+    restInterval: Date.now(),
+  });
+  const navigation = useNavigation<HomeNavigation>();
 
   function handleWeightChange(newWeight: string): void {
     const weight = Number(newWeight);
@@ -167,6 +161,16 @@ export function WorkoutLogForm() {
             ]}
           >
             <Text style={styles.buttonText}>lb</Text>
+          </Button>
+        </View>
+        <View style={styles.inputSection}>
+          <Text style={styles.inputLabel}>Video: </Text>
+          <Button
+            onPress={() => navigation.navigate("NewLog", { screen: "camera" })}
+            color="darkblue"
+            style={{ flex: 1 }}
+          >
+            <Ionicon name="videocam" color="white" size={25} />
           </Button>
         </View>
       </View>
