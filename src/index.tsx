@@ -10,6 +10,7 @@ import {
   useSelector,
 } from "react-redux";
 import { App } from "./components/App";
+import { UIReducer } from "./slices/UISlice";
 import { userReducer } from "./slices/usersSlice";
 import { workoutLogsReducer } from "./slices/workoutLogsSlice";
 import { workoutPlansReducer } from "./slices/workoutPlansSlice";
@@ -21,6 +22,7 @@ export const store = configureStore({
     workoutPlans: workoutPlansReducer,
     workoutLogs: workoutLogsReducer,
     workouts: workoutsReducer,
+    UI: UIReducer,
   },
 });
 
