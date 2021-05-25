@@ -1,15 +1,11 @@
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { useFocusEffect, useNavigation } from "@react-navigation/core";
-import { CompositeNavigationProp } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { useFocusEffect } from "@react-navigation/core";
 import * as React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { ExerciseTable } from "../containers/ExerciseTable";
-import { HomeTabParamList } from "../navigators/HomeTabNavigator";
-import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
+import { setLogInProgress } from "../slices/UISlice";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
 import { getNextWorkout, workoutData } from "../slices/workoutsSlice";
 import {
@@ -20,16 +16,10 @@ import {
 } from "../util/constants";
 import { isToday, isTomorrow } from "../util/util";
 
-type HomeScreenNavigationProp = CompositeNavigationProp<
-  BottomTabNavigationProp<HomeTabParamList, "Logs">,
-  StackNavigationProp<WorkoutLogStackParamList>
->;
-
 export function HomeScreen() {
   const dispatch = useAppDispatch();
   const nextWorkout = useAppSelector((state) => state.workouts.nextWorkout);
   const message = useAppSelector((state) => state.workouts.message);
-  const navigation = useNavigation<HomeScreenNavigationProp>();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -39,7 +29,7 @@ export function HomeScreen() {
   );
 
   function handleBeginWorkout() {
-    navigation.navigate("Logs", { screen: "new", params: undefined });
+    dispatch(setLogInProgress(true));
   }
 
   return (
