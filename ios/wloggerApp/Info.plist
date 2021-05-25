@@ -52,6 +52,10 @@
 	<string>This app would like to save videos to your device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app would like to save videos to your device.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app would like to use the camera to record videos for workout logs.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app would like to use the microphone to record videos for workout logs.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BalsamiqSans-Regular.ttf</string>
