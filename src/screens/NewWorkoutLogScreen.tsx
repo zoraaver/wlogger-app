@@ -1,5 +1,3 @@
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { useFocusEffect, useNavigation } from "@react-navigation/core";
 import * as React from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,27 +5,12 @@ import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { WorkoutLogForm } from "../components/WorkoutLogForm";
 import { WorkoutLogTable } from "../containers/WorkoutLogTable";
-import { HomeTabParamList } from "../navigators/HomeTabNavigator";
-import {
-  clearEditWorkoutLog,
-  postWorkoutLog,
-} from "../slices/workoutLogsSlice";
+import { setLogInProgress } from "../slices/UISlice";
+import { postWorkoutLog } from "../slices/workoutLogsSlice";
 import { BalsamiqSans, Helvetica, successColor } from "../util/constants";
-import { useHideTabBarInNestedStack } from "../util/hooks";
-
-type NewWorkoutLogScreenNavigationProp = BottomTabNavigationProp<HomeTabParamList>;
 
 export function NewWorkoutLogScreen() {
-  useHideTabBarInNestedStack();
-
-  const navigation = useNavigation<NewWorkoutLogScreenNavigationProp>();
   const dispatch = useAppDispatch();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      dispatch(clearEditWorkoutLog());
-    }, [])
-  );
 
   const workoutLog = useAppSelector(
     (state) => state.workoutLogs.editWorkoutLog
@@ -40,8 +23,7 @@ export function NewWorkoutLogScreen() {
       [
         {
           text: "Ok",
-          onPress: () =>
-            navigation.reset({ index: 0, routes: [{ name: "Home" }] }),
+          onPress: () => dispatch(setLogInProgress(false)),
         },
         { text: "Cancel" },
       ]
@@ -50,14 +32,11 @@ export function NewWorkoutLogScreen() {
 
   async function handleLogWorkout() {
     await dispatch(postWorkoutLog(workoutLog));
-    navigation.navigate("Logs", { screen: "index" });
+    dispatch(setLogInProgress(false));
   }
 
   return (
-    <SafeAreaView
-      style={styles.newWorkoutLogScreen}
-      edges={["bottom", "left", "right"]}
-    >
+    <SafeAreaView style={styles.newWorkoutLogScreen}>
       <ScrollView>
         <WorkoutLogForm />
         <Text style={styles.tableTitle}>Logged sets:</Text>
