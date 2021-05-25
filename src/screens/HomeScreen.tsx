@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { ExerciseTable } from "../containers/ExerciseTable";
 import { setLogInProgress } from "../slices/UISlice";
+import { clearEditWorkoutLog } from "../slices/workoutLogsSlice";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
 import { getNextWorkout, workoutData } from "../slices/workoutsSlice";
 import {
@@ -30,6 +31,7 @@ export function HomeScreen() {
 
   function handleBeginWorkout() {
     dispatch(setLogInProgress(true));
+    dispatch(clearEditWorkoutLog());
   }
 
   return (
