@@ -13,8 +13,6 @@ import Ionicon from "react-native-vector-icons/Ionicons";
 import { Button } from "./Button";
 import { baseURL } from "../config/axios.config";
 import { useNavigation } from "@react-navigation/core";
-import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
-import { StackNavigationProp } from "@react-navigation/stack";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -28,6 +26,7 @@ import {
   useHorizontalSwipeHandler,
   useVerticalCollapseTransition,
 } from "../util/hooks";
+import { HomeNavigation } from "../navigators/HomeTabNavigator";
 
 interface WorkoutLogVideo {
   set: setLogData & {
@@ -44,9 +43,7 @@ const maxIconSize = 25;
 const rowInitialHeight = 70;
 
 export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
-  const navigation = useNavigation<
-    StackNavigationProp<WorkoutLogStackParamList>
-  >();
+  const navigation = useNavigation<HomeNavigation>();
   const dispatch = useAppDispatch();
 
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
@@ -150,7 +147,10 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
           </Text>
           <Button
             onPress={() =>
-              navigation.navigate("showVideo", { videoUrl, videoTitle })
+              navigation.navigate("Logs", {
+                screen: "showVideo",
+                params: { videoTitle, videoUrl },
+              })
             }
             color={successColor}
             style={styles.playButton}
