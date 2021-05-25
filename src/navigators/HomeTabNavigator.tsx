@@ -1,5 +1,6 @@
 import {
   BottomTabNavigationOptions,
+  BottomTabNavigationProp,
   createBottomTabNavigator,
 } from "@react-navigation/bottom-tabs";
 import { NavigatorScreenParams, RouteProp } from "@react-navigation/native";
@@ -13,13 +14,21 @@ import {
   WorkoutLogStackNavigator,
   WorkoutLogStackParamList,
 } from "./WorkoutLogStackNavigator";
+import { useAppSelector } from "..";
+import {
+  NewWorkoutLogStackNavigator,
+  NewWorkoutLogStackParamList,
+} from "./NewWorkoutLogStackNavigator";
 
-export type HomeTabParamList = {
+type HomeTabParamList = {
   Home: undefined;
   Logs: NavigatorScreenParams<WorkoutLogStackParamList>;
   Plans: undefined;
   Settings: undefined;
+  NewLog: NavigatorScreenParams<NewWorkoutLogStackParamList>;
 };
+
+export type HomeNavigation = BottomTabNavigationProp<HomeTabParamList>;
 
 function tabScreenOptions({
   route,
@@ -44,7 +53,7 @@ function tabScreenOptions({
           iconName = "journal";
           break;
         default:
-          break;
+          return null;
       }
       return <Ionicon name={iconName} size={size} color={color} />;
     },
@@ -54,6 +63,8 @@ function tabScreenOptions({
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 
 export function HomeTabNavigator() {
+  const logInProgress = useAppSelector((state) => state.UI.logInProgress);
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -65,10 +76,20 @@ export function HomeTabNavigator() {
       }}
       screenOptions={tabScreenOptions}
     >
-      <Tab.Screen component={WorkoutLogStackNavigator} name="Logs" />
-      <Tab.Screen component={WorkoutPlansScreen} name="Plans" />
-      <Tab.Screen component={HomeScreen} name="Home" />
-      <Tab.Screen component={SettingsScreen} name="Settings" />
+      {logInProgress ? (
+        <Tab.Screen
+          name="NewLog"
+          component={NewWorkoutLogStackNavigator}
+          options={{ tabBarVisible: false }}
+        />
+      ) : (
+        <>
+          <Tab.Screen component={WorkoutLogStackNavigator} name="Logs" />
+          <Tab.Screen component={WorkoutPlansScreen} name="Plans" />
+          <Tab.Screen component={HomeScreen} name="Home" />
+          <Tab.Screen component={SettingsScreen} name="Settings" />
+        </>
+      )}
     </Tab.Navigator>
   );
 }
