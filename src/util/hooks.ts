@@ -137,14 +137,18 @@ export function useSwipeableTapHandler<TapCallBackArgs>(
   return { tapGestureEventHandler, itemOpacity };
 }
 
-export function useHideTabBarInNestedStack() {
+export function useHideTabBarInNestedStack(hideTabBar?: boolean) {
   const navigation = useNavigation();
   useFocusEffect(
     useCallback(() => {
-      navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: false });
-      return () =>
-        navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: true });
-    }, [])
+      if (hideTabBar) {
+        navigation.dangerouslyGetParent()?.setOptions({ tabBarVisible: false });
+        return () =>
+          navigation
+            .dangerouslyGetParent()
+            ?.setOptions({ tabBarVisible: true });
+      }
+    }, [hideTabBar])
   );
 }
 
