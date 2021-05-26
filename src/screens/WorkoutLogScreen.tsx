@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "..";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import {
+  deleteSetVideo,
   getWorkoutLog,
   videoSetsSelector,
   workoutLogData,
@@ -43,7 +44,20 @@ export function WorkoutLogScreen() {
             <Text style={styles.videoHeaderText}>Form videos</Text>
           </View>
           {setsWithVideos.map((set) => (
-            <WorkoutLogVideoRow set={set} key={set._id} />
+            <WorkoutLogVideoRow
+              set={set}
+              key={set._id}
+              showDownload
+              deleteVideo={() =>
+                dispatch(
+                  deleteSetVideo({
+                    workoutLogId: set.workoutLogId as string,
+                    setId: set._id as string,
+                    exerciseId: set.exerciseId as string,
+                  })
+                )
+              }
+            />
           ))}
         </View>
       ) : null}
