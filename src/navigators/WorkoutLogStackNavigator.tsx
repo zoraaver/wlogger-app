@@ -9,7 +9,7 @@ import { BalsamiqSans, infoColor } from "../util/constants";
 export type WorkoutLogStackParamList = {
   index: undefined;
   show: { id: string; dateTitle: string };
-  showVideo: { videoUrl: string; videoTitle: string };
+  showVideo: { videoUrl: string; videoTitle: string; hideTabBar?: boolean };
 };
 
 const Stack = createStackNavigator<WorkoutLogStackParamList>();
@@ -19,8 +19,8 @@ export function WorkoutLogStackNavigator() {
     <Stack.Navigator
       initialRouteName="index"
       screenOptions={{
-        headerTitleStyle: styles.screenHeaderTitle,
-        headerStyle: styles.screenHeader,
+        headerTitleStyle: workoutLogScreenStyles.screenHeaderTitle,
+        headerStyle: workoutLogScreenStyles.screenHeader,
         headerTitleAlign: "center",
       }}
     >
@@ -51,7 +51,7 @@ export function WorkoutLogStackNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
+export const workoutLogScreenStyles = StyleSheet.create({
   screenHeader: {
     backgroundColor: infoColor,
   },
