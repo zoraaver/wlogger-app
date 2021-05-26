@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/core";
 import * as React from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { RecordResponse, RNCamera as Camera } from "react-native-camera";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,41 +14,39 @@ import { NewLogNavigation } from "../navigators/NewWorkoutLogStackNavigator";
 const megaByte = 1000000;
 
 export function WorkoutLogCameraScreen() {
-  const camera = React.useRef<Camera>(null);
   const navigation = useNavigation<NewLogNavigation>();
+  const camera = React.useRef<Camera>(null);
   const [isRecording, setIsRecording] = React.useState(false);
-  const videoRecording = React.useRef<Promise<RecordResponse>>();
-
-  useInterval(async () => {
-    const iosIsRecording = await camera.current?.isRecording();
-    if (isRecording && !iosIsRecording) {
-      console.log(await videoRecording.current);
-      navigation.navigate("logForm");
-    }
-  }, Platform.select({ ios: 500 }));
+  const recordingCancelled = React.useRef(false);
 
   async function handleRecord() {
-    if (
-      Platform.OS === "ios" &&
-      !(await camera.current?.isRecording()) &&
-      isRecording
-    ) {
-      console.log(await videoRecording.current);
-      navigation.navigate("logForm");
-    } else if (isRecording) {
+    if (isRecording) {
       camera.current?.stopRecording();
     } else {
-      videoRecording.current = camera.current?.recordAsync({
+      const recording:
+        | RecordResponse
+        | undefined = await camera.current?.recordAsync({
         maxFileSize: 50 * megaByte,
       });
+      if (recording) {
+        setIsRecording(false);
+        navigation.navigate("logForm", {
+          ...recording,
+          cancelled: recordingCancelled.current,
+        });
+      }
     }
   }
 
   function handleCancel() {
     if (isRecording) {
+      recordingCancelled.current = true;
       camera.current?.stopRecording();
+    } else {
+      navigation.navigate("logForm", {
+        cancelled: true,
+      } as any);
     }
-    navigation.navigate("logForm");
   }
 
   return (
@@ -61,11 +59,6 @@ export function WorkoutLogCameraScreen() {
         ref={camera}
         captureAudio={true}
         style={styles.camera}
-        onRecordingEnd={async () => {
-          setIsRecording(false);
-          console.log(await videoRecording.current);
-          navigation.navigate("logForm");
-        }}
         playSoundOnRecord={true}
         onRecordingStart={() => setIsRecording(true)}
       />
