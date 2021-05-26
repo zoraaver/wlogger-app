@@ -121,16 +121,32 @@ export const cleanCacheDirectory = createAsyncThunk(
 );
 
 export type WorkoutLogPosition = { setIndex: number; exerciseIndex: number };
-type logVideoFile = WorkoutLogPosition & { file: any };
+
+export interface File {
+  name: string;
+  type: string;
+  uri: string;
+  size: number;
+}
+
+type logVideoFile = WorkoutLogPosition & { file: File };
 
 const logVideoFiles: logVideoFile[] = [];
 
 export const addFormVideo = createAsyncThunk(
   "workoutLogs/addFormVideo",
-  async (position: WorkoutLogPosition & { file: any }, { dispatch }) => {
+  async (
+    position: { setIndex?: number; exerciseIndex?: number; file: File },
+    { dispatch, getState }
+  ) => {
     const megaByte = 1000000;
     const fileSizeLimit = 50 * megaByte;
-    const { file, setIndex, exerciseIndex } = position;
+    const rootState = getState() as RootState;
+    const {
+      file,
+      setIndex = lastSetIndexSelector(rootState),
+      exerciseIndex = lastExerciseIndexSelector(rootState),
+    } = position;
     const fileExtension = file.name.split(".").pop();
     if (
       !fileExtension ||
@@ -492,6 +508,18 @@ const slice = createSlice({
 const editWorkoutLogSelector = (state: RootState) =>
   state.workoutLogs.editWorkoutLog;
 
+const lastExerciseIndexSelector = (state: RootState) =>
+  state.workoutLogs.editWorkoutLog.exercises.length - 1;
+
+const lastSetIndexSelector = (state: RootState) => {
+  const exercises = state.workoutLogs.editWorkoutLog.exercises;
+  if (exercises.length > 0) {
+    return exercises[exercises.length - 1].sets.length - 1;
+  } else {
+    return -1;
+  }
+};
+
 export const videoSetsSelector = createSelector(
   editWorkoutLogSelector,
   (workoutLog: workoutLogData) =>
@@ -508,6 +536,24 @@ export const videoSetsSelector = createSelector(
       )
       .flat()
 );
+
+// utility methods
+
+export function findSetIndex(
+  exercise: exerciseLogData,
+  setId: string | undefined
+): number {
+  return exercise.sets.findIndex((set) => set._id === setId);
+}
+
+export function findExerciseIndex(
+  workoutLog: workoutLogData,
+  exerciseId: string | undefined
+): number {
+  return workoutLog.exercises.findIndex(
+    (exercise) => exercise._id === exerciseId
+  );
+}
 
 export const workoutLogsReducer = slice.reducer;
 export const {
