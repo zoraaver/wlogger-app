@@ -10,15 +10,18 @@ import {
 import { Button } from "./Button";
 import { WorkoutLogTimer } from "./WorkoutLogTimer";
 import Ionicon from "react-native-vector-icons/Ionicons";
-import { addSet, EntryData } from "../slices/workoutLogsSlice";
+import { addFormVideo, addSet, EntryData } from "../slices/workoutLogsSlice";
 import { Helvetica, successColor } from "../util/constants";
 import { useAppDispatch } from "..";
-import { useNavigation } from "@react-navigation/core";
+import { useNavigation, useRoute } from "@react-navigation/core";
 import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
+import { getFileStats } from "../util/util";
 
 export function WorkoutLogForm() {
   const [setInProgress, setSetInProgress] = React.useState(false);
   const [exerciseNameError, setExerciseNameError] = React.useState("");
+  const videoRecording = useRoute<NewWorkoutLogScreenRouteProp>().params;
   const dispatch = useAppDispatch();
 
   const [formData, setFormData] = React.useState<EntryData>({
@@ -48,7 +51,15 @@ export function WorkoutLogForm() {
     }
   }
 
-  function handleAddSet() {
+  function handleVideo() {
+    if (videoRecording.cancelled) {
+      navigation.navigate("NewLog", { screen: "camera" });
+    } else {
+      navigation.setParams({ cancelled: true });
+    }
+  }
+
+  async function handleAddSet() {
     if (setInProgress) {
       if (formData.name === "") {
         setExerciseNameError("Exercise name is required");
@@ -56,6 +67,18 @@ export function WorkoutLogForm() {
       }
       setExerciseNameError("");
       dispatch(addSet(formData));
+
+      if (!videoRecording.cancelled) {
+        const { size, type } = await getFileStats(videoRecording.uri.slice(6));
+        const { uri } = videoRecording;
+        dispatch(
+          addFormVideo({
+            file: { uri, name: uri, size, type },
+          })
+        );
+        navigation.setParams({ cancelled: true });
+      }
+
       setFormData({ ...formData, restInterval: Date.now() });
       setSetInProgress(!setInProgress);
     } else {
@@ -166,11 +189,15 @@ export function WorkoutLogForm() {
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Video: </Text>
           <Button
-            onPress={() => navigation.navigate("NewLog", { screen: "camera" })}
-            color="darkblue"
+            onPress={handleVideo}
+            color={videoRecording.cancelled ? "darkblue" : "darkred"}
             style={{ flex: 1 }}
           >
-            <Ionicon name="videocam" color="white" size={25} />
+            <Ionicon
+              name={videoRecording.cancelled ? "videocam" : "trash"}
+              color="white"
+              size={25}
+            />
           </Button>
         </View>
       </View>
