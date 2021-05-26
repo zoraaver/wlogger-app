@@ -7,24 +7,27 @@ import {
 import * as React from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import Video from "react-native-video";
+import { NewWorkoutLogStackParamList } from "../navigators/NewWorkoutLogStackNavigator";
 import { WorkoutLogStackParamList } from "../navigators/WorkoutLogStackNavigator";
 import { useHideTabBarInNestedStack } from "../util/hooks";
 import { getToken } from "../util/util";
 import { LoadingScreen } from "./LoadingScreen";
 
 type WorkoutLogVideoScreenRouteProp = RouteProp<
-  WorkoutLogStackParamList,
+  WorkoutLogStackParamList | NewWorkoutLogStackParamList,
   "showVideo"
 >;
 
 export function WorkoutLogVideoScreen() {
-  const videoUrl: string = useRoute<WorkoutLogVideoScreenRouteProp>().params
-    .videoUrl;
+  const {
+    videoUrl,
+    hideTabBar,
+  } = useRoute<WorkoutLogVideoScreenRouteProp>().params;
   const { width: windowWidth } = useWindowDimensions();
   const [token, setToken] = React.useState("");
   const navigation = useNavigation();
 
-  useHideTabBarInNestedStack();
+  useHideTabBarInNestedStack(hideTabBar);
 
   useFocusEffect(
     React.useCallback(() => {
