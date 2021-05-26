@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Alert, Platform, StyleSheet, Text } from "react-native";
 import {
-  deleteSetVideo,
   downloadFormVideo,
   exerciseLogData,
   setLogData,
@@ -12,7 +11,7 @@ import { Helvetica, successColor } from "../util/constants";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { Button } from "./Button";
 import { baseURL } from "../config/axios.config";
-import { useNavigation } from "@react-navigation/core";
+import { useNavigation, useRoute } from "@react-navigation/core";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -34,17 +33,25 @@ interface WorkoutLogVideo {
     exerciseName: exerciseLogData["name"];
     workoutLogId: workoutLogData["_id"];
   };
+  deleteVideo: () => void;
+  showDownload?: boolean;
 }
 
-const rightMostSnapPoint = -160;
-const snapPoints: number[] = [rightMostSnapPoint, 0];
 const maxButtonFontSize = 10;
 const maxIconSize = 25;
 const rowInitialHeight = 70;
 
-export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
+export function WorkoutLogVideoRow({
+  set,
+  deleteVideo,
+  showDownload,
+}: WorkoutLogVideo) {
   const navigation = useNavigation<HomeNavigation>();
+  const route = useRoute();
   const dispatch = useAppDispatch();
+
+  const rightMostSnapPoint = showDownload ? -160 : -80;
+  const snapPoints: number[] = [rightMostSnapPoint, 0];
 
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
     snapPoints
@@ -93,18 +100,10 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
     fontSize: iconFontSize.value,
   }));
 
-  const videoUrl = `${baseURL}${workoutLogUrl}/${set.workoutLogId}/exercises/${set.exerciseId}/sets/${set._id}/video`;
+  const videoUrl =
+    set.formVideoName ||
+    `${baseURL}${workoutLogUrl}/${set.workoutLogId}/exercises/${set.exerciseId}/sets/${set._id}/video`;
   const videoTitle = `${set.exerciseName} ${set.repetitions} x ${set.weight} ${set.unit}`;
-
-  function handleDeleteVideo() {
-    dispatch(
-      deleteSetVideo({
-        exerciseId: set.exerciseId as string,
-        setId: set._id as string,
-        workoutLogId: set.workoutLogId as string,
-      })
-    );
-  }
 
   function handleDownloadVideo() {
     dispatch(
@@ -146,12 +145,13 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
             </Text>
           </Text>
           <Button
-            onPress={() =>
-              navigation.navigate("Logs", {
+            onPress={() => {
+              const logIsNew = route.name === "logForm";
+              navigation.navigate(logIsNew ? "NewLog" : "Logs", {
                 screen: "showVideo",
-                params: { videoTitle, videoUrl },
-              })
-            }
+                params: { videoTitle, videoUrl, hideTabBar: !logIsNew },
+              });
+            }}
             color={successColor}
             style={styles.playButton}
           >
@@ -160,20 +160,22 @@ export function WorkoutLogVideoRow({ set }: WorkoutLogVideo) {
         </Animated.View>
       </PanGestureHandler>
       <Animated.View style={[styles.hiddenArea, animatedHiddenAreaStyle]}>
-        <Button onPress={handleDownloadVideo} style={styles.button}>
-          <AnimatedIonicon
-            name="download-outline"
-            color="white"
-            style={animatedDownloadIconStyle}
-          />
-          <Animated.Text
-            style={[styles.buttonText, animatedDownloadButtonTextStyle]}
-          >
-            Download
-          </Animated.Text>
-        </Button>
+        {showDownload ? (
+          <Button onPress={handleDownloadVideo} style={styles.button}>
+            <AnimatedIonicon
+              name="download-outline"
+              color="white"
+              style={animatedDownloadIconStyle}
+            />
+            <Animated.Text
+              style={[styles.buttonText, animatedDownloadButtonTextStyle]}
+            >
+              Download
+            </Animated.Text>
+          </Button>
+        ) : null}
         <Button
-          onPress={() => collapseTransition(handleDeleteVideo)}
+          onPress={() => collapseTransition(deleteVideo)}
           style={styles.button}
           color="red"
         >
