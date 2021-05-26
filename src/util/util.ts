@@ -7,7 +7,11 @@ import {
 } from "../slices/workoutPlansSlice";
 import { incrementField } from "../slices/workoutsSlice";
 
-export function renderRestInterval(seconds?: number) {
+export function renderRestInterval(
+  seconds?: number,
+  displayZeroSeconds?: boolean
+) {
+  if (displayZeroSeconds && seconds === 0) return "00:00";
   if (!seconds) return "-";
   seconds = Math.round(seconds);
   const minutes = Math.floor(seconds / 60);
