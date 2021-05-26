@@ -1,4 +1,5 @@
 import EncryptedStorage from "react-native-encrypted-storage";
+import RNFetchBlob from "rn-fetch-blob";
 import {
   weekData,
   weightUnit,
@@ -78,3 +79,15 @@ export function extractTokenFromSetCookieHeaders(
 export function getToken() {
   return EncryptedStorage.getItem("token");
 }
+
+export async function getFileStats(path: string) {
+  const stats = await RNFetchBlob.fs.stat(path);
+  const fileExtension = stats.filename.split(".").pop();
+  return { ...stats, type: extensionToMime[fileExtension || ""] };
+}
+
+const extensionToMime: { [extension: string]: string } = {
+  avi: "video/x-msvideo",
+  mp4: "video/mp4",
+  mov: "video/quicktime",
+};
