@@ -1,13 +1,27 @@
+import { RouteProp } from "@react-navigation/native";
 import * as React from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { WorkoutLogForm } from "../components/WorkoutLogForm";
+import { WorkoutLogVideoRow } from "../components/WorkoutLogVideoRow";
 import { WorkoutLogTable } from "../containers/WorkoutLogTable";
+import { NewWorkoutLogStackParamList } from "../navigators/NewWorkoutLogStackNavigator";
 import { setLogInProgress } from "../slices/UISlice";
-import { postWorkoutLog } from "../slices/workoutLogsSlice";
+import {
+  findExerciseIndex,
+  findSetIndex,
+  postWorkoutLog,
+  removeFormVideo,
+  videoSetsSelector,
+} from "../slices/workoutLogsSlice";
 import { BalsamiqSans, Helvetica, successColor } from "../util/constants";
+
+export type NewWorkoutLogScreenRouteProp = RouteProp<
+  NewWorkoutLogStackParamList,
+  "logForm"
+>;
 
 export function NewWorkoutLogScreen() {
   const dispatch = useAppDispatch();
@@ -15,6 +29,7 @@ export function NewWorkoutLogScreen() {
   const workoutLog = useAppSelector(
     (state) => state.workoutLogs.editWorkoutLog
   );
+  const setsWithVideos = useAppSelector(videoSetsSelector);
 
   function handleCancelWorkout() {
     Alert.alert(
@@ -41,6 +56,33 @@ export function NewWorkoutLogScreen() {
         <WorkoutLogForm />
         <Text style={styles.tableTitle}>Logged sets:</Text>
         <WorkoutLogTable workoutLog={workoutLog} />
+        <View style={styles.videoArea}>
+          <View style={styles.videoHeader}>
+            <Text style={styles.videoHeaderText}>Form videos</Text>
+          </View>
+          {setsWithVideos.map((set, index) => (
+            <WorkoutLogVideoRow
+              set={set}
+              key={index}
+              deleteVideo={() => {
+                const exerciseIndex = findExerciseIndex(
+                  workoutLog,
+                  set.exerciseId
+                );
+                dispatch(
+                  removeFormVideo({
+                    exerciseIndex,
+                    setIndex: findSetIndex(
+                      workoutLog.exercises[exerciseIndex],
+                      set._id
+                    ),
+                  })
+                );
+              }}
+              showDownload={false}
+            />
+          ))}
+        </View>
         <View style={styles.finishWorkoutArea}>
           <Button
             onPress={handleLogWorkout}
@@ -84,5 +126,19 @@ const styles = StyleSheet.create({
   finishWorkoutArea: {
     padding: 10,
     justifyContent: "space-between",
+  },
+  videoHeader: {
+    backgroundColor: "aliceblue",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  videoHeaderText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    fontFamily: Helvetica,
+  },
+  videoArea: {
+    marginVertical: 20,
+    borderTopWidth: 0.2,
   },
 });
