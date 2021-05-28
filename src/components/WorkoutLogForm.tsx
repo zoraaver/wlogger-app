@@ -2,10 +2,9 @@ import * as React from "react";
 import {
   View,
   Text,
-  NativeSyntheticEvent,
-  NativeTouchEvent,
   TextInput,
   StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { Button } from "./Button";
 import { WorkoutLogTimer } from "./WorkoutLogTimer";
@@ -17,6 +16,8 @@ import { useNavigation, useRoute } from "@react-navigation/core";
 import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
 import { getFileStats } from "../util/util";
+import NumericInput from "react-native-numeric-input";
+import { DeviceOrientation, useOrientation } from "../util/hooks";
 
 export function WorkoutLogForm() {
   const [setInProgress, setSetInProgress] = React.useState(false);
@@ -32,24 +33,10 @@ export function WorkoutLogForm() {
     restInterval: Date.now(),
   });
   const navigation = useNavigation<HomeNavigation>();
-
-  function handleWeightChange(newWeight: string): void {
-    const weight = Number(newWeight);
-    if (!isNaN(weight) && weight >= 0) {
-      setFormData({ ...formData, weight });
-    }
-  }
-
-  function handleRepetitionsChange(newRepetitions: string): void {
-    const repetitions = Number(newRepetitions);
-    if (
-      !isNaN(repetitions) &&
-      repetitions >= 0 &&
-      Number.isInteger(repetitions)
-    ) {
-      setFormData({ ...formData, repetitions });
-    }
-  }
+  const width = useWindowDimensions().width;
+  const orientation: DeviceOrientation = useOrientation();
+  const numericInputWidth =
+    width * (orientation === DeviceOrientation.portrait ? 0.65 : 0.8);
 
   function handleVideo() {
     if (videoRecording.cancelled) {
@@ -125,38 +112,39 @@ export function WorkoutLogForm() {
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Weight: </Text>
-          <TextInput
-            style={[styles.logInput, styles.logNumberInput]}
-            value={formData.weight ? formData.weight.toString() : ""}
-            onChangeText={handleWeightChange}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
-          <AddRemoveButtonPair
-            onAddPress={() => {
-              handleWeightChange((formData.weight + 1).toString());
-            }}
-            onRemovePress={() => {
-              handleWeightChange((formData.weight - 1).toString());
-            }}
+          <NumericInput
+            inputStyle={styles.numericInput}
+            containerStyle={styles.numericInputContainer}
+            totalWidth={numericInputWidth}
+            totalHeight={50}
+            onChange={(weight) => setFormData({ ...formData, weight })}
+            value={formData.weight}
+            type="plus-minus"
+            valueType="real"
+            rounded
+            minValue={0}
+            step={1.25}
+            leftButtonBackgroundColor="red"
+            rightButtonBackgroundColor={successColor}
           />
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Reps: </Text>
-          <TextInput
-            style={[styles.logInput, styles.logNumberInput]}
-            value={formData.repetitions ? formData.repetitions.toString() : ""}
-            onChangeText={handleRepetitionsChange}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
-          <AddRemoveButtonPair
-            onAddPress={() => {
-              handleRepetitionsChange((formData.repetitions + 1).toString());
-            }}
-            onRemovePress={() => {
-              handleRepetitionsChange((formData.repetitions - 1).toString());
-            }}
+          <NumericInput
+            value={formData.repetitions}
+            onChange={(repetitions) =>
+              setFormData({ ...formData, repetitions })
+            }
+            containerStyle={styles.numericInputContainer}
+            inputStyle={styles.numericInput}
+            rounded
+            step={1}
+            totalHeight={50}
+            totalWidth={numericInputWidth}
+            type="plus-minus"
+            valueType="integer"
+            leftButtonBackgroundColor="red"
+            rightButtonBackgroundColor={successColor}
           />
         </View>
         <View style={styles.inputSection}>
@@ -205,40 +193,6 @@ export function WorkoutLogForm() {
   );
 }
 
-interface AddRemoveButtonProps {
-  onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-  action: "add" | "remove";
-}
-
-function AddRemoveButton({ onPress, action }: AddRemoveButtonProps) {
-  return (
-    <Button
-      style={styles.addRemoveButtons}
-      onPress={onPress}
-      color={action === "add" ? successColor : "red"}
-    >
-      <Ionicon name={action} size={25} color="white" />
-    </Button>
-  );
-}
-
-interface AddRemoveButtonPairProps {
-  onAddPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-  onRemovePress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
-}
-
-function AddRemoveButtonPair({
-  onAddPress,
-  onRemovePress,
-}: AddRemoveButtonPairProps) {
-  return (
-    <>
-      <AddRemoveButton action="add" onPress={onAddPress} />
-      <AddRemoveButton action="remove" onPress={onRemovePress} />
-    </>
-  );
-}
-
 const styles = StyleSheet.create({
   buttonText: { color: "white", fontFamily: Helvetica, fontSize: 20 },
   logInput: {
@@ -268,11 +222,12 @@ const styles = StyleSheet.create({
     fontFamily: Helvetica,
     paddingRight: 10,
   },
-  logNumberInput: {
-    width: 90,
-    flexGrow: undefined,
+  numericInputContainer: {
+    flex: 1,
   },
-  addRemoveButtons: { height: 50, width: 50 },
+  numericInput: {
+    backgroundColor: "white",
+  },
   unitButton: {
     flex: 1,
     height: 50,
