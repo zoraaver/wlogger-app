@@ -28,7 +28,12 @@ export function NewWorkoutLogStackNavigator() {
   return (
     <Stack.Navigator
       initialRouteName="logForm"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        headerTitleStyle: workoutLogScreenStyles.screenHeaderTitle,
+        headerStyle: workoutLogScreenStyles.screenHeader,
+        headerTitleAlign: "center",
+      }}
     >
       <Stack.Screen
         name="logForm"
@@ -42,13 +47,18 @@ export function NewWorkoutLogStackNavigator() {
         options={({ route }) => ({
           title: route.params.videoTitle,
           headerShown: true,
-          headerStyle: workoutLogScreenStyles.screenHeader,
-          headerTitleStyle: workoutLogScreenStyles.screenHeaderTitle,
-          headerTitleAlign: "center",
           headerBackTitle: "New log",
         })}
       />
-      <Stack.Screen name="upload" component={WorkoutLogVideoUploadScreen} />
+      <Stack.Screen
+        name="upload"
+        component={WorkoutLogVideoUploadScreen}
+        options={{
+          headerShown: true,
+          title: "Uploading videos",
+          headerLeft: () => null,
+        }}
+      />
     </Stack.Navigator>
   );
 }
