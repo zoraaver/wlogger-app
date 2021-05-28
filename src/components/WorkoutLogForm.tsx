@@ -5,6 +5,7 @@ import {
   TextInput,
   StyleSheet,
   useWindowDimensions,
+  ViewStyle,
 } from "react-native";
 import { Button } from "./Button";
 import { WorkoutLogTimer } from "./WorkoutLogTimer";
@@ -16,7 +17,7 @@ import { useNavigation, useRoute } from "@react-navigation/core";
 import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
 import { getFileStats } from "../util/util";
-import NumericInput from "react-native-numeric-input";
+import NumericInput, { INumericInputProps } from "react-native-numeric-input";
 import { DeviceOrientation, useOrientation } from "../util/hooks";
 
 export function WorkoutLogForm() {
@@ -113,38 +114,25 @@ export function WorkoutLogForm() {
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Weight: </Text>
           <NumericInput
-            inputStyle={styles.numericInput}
-            containerStyle={styles.numericInputContainer}
+            {...commonNumericInputProps}
             totalWidth={numericInputWidth}
-            totalHeight={50}
+            step={1.25}
             onChange={(weight) => setFormData({ ...formData, weight })}
             value={formData.weight}
-            type="plus-minus"
             valueType="real"
-            rounded
-            minValue={0}
-            step={1.25}
-            leftButtonBackgroundColor="red"
-            rightButtonBackgroundColor={successColor}
           />
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Reps: </Text>
           <NumericInput
-            value={formData.repetitions}
+            {...commonNumericInputProps}
+            totalWidth={numericInputWidth}
+            step={1}
             onChange={(repetitions) =>
               setFormData({ ...formData, repetitions })
             }
-            containerStyle={styles.numericInputContainer}
-            inputStyle={styles.numericInput}
-            rounded
-            step={1}
-            totalHeight={50}
-            totalWidth={numericInputWidth}
-            type="plus-minus"
+            value={formData.repetitions}
             valueType="integer"
-            leftButtonBackgroundColor="red"
-            rightButtonBackgroundColor={successColor}
           />
         </View>
         <View style={styles.inputSection}>
@@ -242,3 +230,16 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
 });
+
+const commonNumericInputProps: INumericInputProps = {
+  type: "plus-minus",
+  rounded: true,
+  leftButtonBackgroundColor: "red",
+  rightButtonBackgroundColor: successColor,
+  minValue: 0,
+  totalHeight: 50,
+  iconStyle: { color: "white" } as ViewStyle,
+  inputStyle: styles.numericInput,
+  containerStyle: styles.numericInputContainer,
+  onChange: () => {},
+};
