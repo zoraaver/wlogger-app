@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/core";
 import * as React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ViewStyle } from "react-native";
 import { RecordResponse, RNCamera as Camera } from "react-native-camera";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -83,6 +83,11 @@ function CameraControls({
   isRecording,
 }: CameraControlsProps) {
   const [videoDuration, setVideoDuration] = React.useState(0);
+  const [recordButtonWidth, setRecordButtonWidth] = React.useState(50);
+  const recordButtonStyle: ViewStyle = {
+    width: recordButtonWidth,
+    borderRadius: recordButtonWidth / 2,
+  };
 
   useInterval(
     () => {
@@ -104,9 +109,12 @@ function CameraControls({
       </View>
       <View style={{ width: "33%", alignItems: "center" }}>
         <TouchableOpacity
+          onLayout={(event) =>
+            setRecordButtonWidth(event.nativeEvent.layout.height)
+          }
           onPress={handleRecord}
-          style={styles.recordButton}
-          activeOpacity={0.5}
+          style={[styles.recordButton, recordButtonStyle]}
+          activeOpacity={0.4}
         >
           {isRecording ? <Text style={{ color: "white" }}>STOP</Text> : null}
         </TouchableOpacity>
@@ -133,7 +141,7 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     width: 50,
-    height: 50,
+    height: "92%",
     borderRadius: 25,
     borderWidth: 2,
     borderColor: "black",
@@ -150,7 +158,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    // width: "33%",
     height: undefined,
     borderRadius: 17,
   },
