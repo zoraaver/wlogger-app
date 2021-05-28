@@ -1,4 +1,4 @@
-import { RouteProp } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
 import * as React from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,6 +7,7 @@ import { Button } from "../components/Button";
 import { WorkoutLogForm } from "../components/WorkoutLogForm";
 import { WorkoutLogVideoRow } from "../components/WorkoutLogVideoRow";
 import { WorkoutLogTable } from "../containers/WorkoutLogTable";
+import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import { NewWorkoutLogStackParamList } from "../navigators/NewWorkoutLogStackNavigator";
 import { setLogInProgress } from "../slices/UISlice";
 import {
@@ -25,11 +26,22 @@ export type NewWorkoutLogScreenRouteProp = RouteProp<
 
 export function NewWorkoutLogScreen() {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation<HomeNavigation>();
 
   const workoutLog = useAppSelector(
     (state) => state.workoutLogs.editWorkoutLog
   );
   const setsWithVideos = useAppSelector(videoSetsSelector);
+
+  const videoUploadProgress = useAppSelector(
+    (state) => state.workoutLogs.videoUploadProgress
+  );
+  const videoUploadInProgress = !!Object.keys(videoUploadProgress).length;
+
+  React.useEffect(() => {
+    if (videoUploadInProgress)
+      navigation.navigate("NewLog", { screen: "upload" });
+  }, [videoUploadProgress]);
 
   function handleCancelWorkout() {
     Alert.alert(
@@ -46,8 +58,11 @@ export function NewWorkoutLogScreen() {
   }
 
   async function handleLogWorkout() {
-    await dispatch(postWorkoutLog(workoutLog));
-    dispatch(setLogInProgress(false));
+    const workoutLogPosted = dispatch(postWorkoutLog(workoutLog));
+    if (!setsWithVideos.length) {
+      await workoutLogPosted;
+      dispatch(setLogInProgress(false));
+    }
   }
 
   return (
