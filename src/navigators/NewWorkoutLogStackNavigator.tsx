@@ -9,7 +9,7 @@ import { WorkoutLogCameraScreen } from "../screens/WorkoutLogCameraScreen";
 import { WorkoutLogVideoScreen } from "../screens/WorkoutLogVideoScreen";
 import { WorkoutLogVideoUploadScreen } from "../screens/WorkoutLogVideoUploadScreen";
 import {
-  workoutLogScreenStyles,
+  headerStyles,
   WorkoutLogStackParamList,
 } from "./WorkoutLogStackNavigator";
 
@@ -30,8 +30,8 @@ export function NewWorkoutLogStackNavigator() {
       initialRouteName="logForm"
       screenOptions={{
         headerShown: false,
-        headerTitleStyle: workoutLogScreenStyles.screenHeaderTitle,
-        headerStyle: workoutLogScreenStyles.screenHeader,
+        headerTitleStyle: headerStyles.screenHeaderTitle,
+        headerStyle: headerStyles.screenHeader,
         headerTitleAlign: "center",
       }}
     >

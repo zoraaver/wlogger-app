@@ -19,8 +19,8 @@ export function WorkoutLogStackNavigator() {
     <Stack.Navigator
       initialRouteName="index"
       screenOptions={{
-        headerTitleStyle: workoutLogScreenStyles.screenHeaderTitle,
-        headerStyle: workoutLogScreenStyles.screenHeader,
+        headerTitleStyle: headerStyles.screenHeaderTitle,
+        headerStyle: headerStyles.screenHeader,
         headerTitleAlign: "center",
       }}
     >
@@ -51,7 +51,7 @@ export function WorkoutLogStackNavigator() {
   );
 }
 
-export const workoutLogScreenStyles = StyleSheet.create({
+export const headerStyles = StyleSheet.create({
   screenHeader: {
     backgroundColor: infoColor,
   },
