@@ -7,7 +7,6 @@ import { NavigatorScreenParams, RouteProp } from "@react-navigation/native";
 import * as React from "react";
 import { HomeScreen } from "../screens/HomeScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
-import { WorkoutPlansScreen } from "../screens/WorkoutPlansScreen";
 import { BalsamiqSans, primaryColor } from "../util/constants";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import {
@@ -19,11 +18,15 @@ import {
   NewWorkoutLogStackNavigator,
   NewWorkoutLogStackParamList,
 } from "./NewWorkoutLogStackNavigator";
+import {
+  WorkoutPlanStackNavigator,
+  WorkoutPlanStackParamList,
+} from "./WorkoutPlanStackNavigator";
 
 type HomeTabParamList = {
   Home: undefined;
   Logs: NavigatorScreenParams<WorkoutLogStackParamList>;
-  Plans: undefined;
+  Plans: NavigatorScreenParams<WorkoutPlanStackParamList>;
   Settings: undefined;
   NewLog: NavigatorScreenParams<NewWorkoutLogStackParamList>;
 };
@@ -85,7 +88,7 @@ export function HomeTabNavigator() {
       ) : (
         <>
           <Tab.Screen component={WorkoutLogStackNavigator} name="Logs" />
-          <Tab.Screen component={WorkoutPlansScreen} name="Plans" />
+          <Tab.Screen component={WorkoutPlanStackNavigator} name="Plans" />
           <Tab.Screen component={HomeScreen} name="Home" />
           <Tab.Screen component={SettingsScreen} name="Settings" />
         </>
