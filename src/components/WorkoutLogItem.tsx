@@ -14,16 +14,9 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import {
-  PanGestureHandler,
-  TapGestureHandler,
-} from "react-native-gesture-handler";
-import {
-  useHorizontalSwipeHandler,
-  useSwipeableTapHandler,
-  useVerticalCollapseTransition,
-} from "../util/hooks";
 import { AnimatedIonicon } from "./AnimatedIonicon";
+import { Swipeable } from "./Swipeable";
+import { Collapsible } from "./Collapsible";
 
 interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
@@ -44,46 +37,53 @@ export function WorkoutLogItem({
     StackNavigationProp<WorkoutLogStackParamList>
   >();
   const dispatch = useAppDispatch();
+  const [collapsed, setCollapsed] = React.useState(false);
 
-  const { panGestureEventHandler, translateX } = useHorizontalSwipeHandler(
-    snapPoints
+  return (
+    <Collapsible
+      collapsed={collapsed}
+      initialHeight={workoutLogItemInitialHeight}
+      onCollapsed={() => dispatch(deleteWorkoutLog(_id))}
+      delay={30}
+    >
+      <Swipeable
+        snapPoints={snapPoints}
+        rightArea={(translateX) => (
+          <WorkoutLogItemDeleteButton
+            translateX={translateX}
+            handleDelete={() => setCollapsed(true)}
+          />
+        )}
+        mainAreaStyle={styles.workoutLogHeader}
+        onPress={() =>
+          navigation.navigate("show", { id: _id, dateTitle: logDate })
+        }
+      >
+        <Text style={styles.workoutLogItemText}>{logDate}</Text>
+        <Text style={styles.workoutLogDetailsText}>
+          {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
+          {setCount} set{setCount === 1 ? "" : "s"}
+        </Text>
+      </Swipeable>
+    </Collapsible>
   );
+}
 
-  const {
-    animatedCollapseItemStyle,
-    collapseTransition,
-  } = useVerticalCollapseTransition(workoutLogItemInitialHeight, 300);
+interface WorkoutLogItemDeleteButtonProps {
+  translateX: Animated.SharedValue<number>;
+  handleDelete: () => void;
+}
 
-  const { tapGestureEventHandler, itemOpacity } = useSwipeableTapHandler(
-    translateX,
-    snapPoints,
-    navigation.navigate,
-    {
-      name: "show",
-      params: { id: _id, dateTitle: logDate },
-    }
-  );
-
+function WorkoutLogItemDeleteButton({
+  translateX,
+  handleDelete,
+}: WorkoutLogItemDeleteButtonProps) {
   const animatedIconStyle = useAnimatedStyle(() => ({
     fontSize: interpolate(
       translateX.value,
       [rightSnapPoint, 0],
       [maxIconSize, 0]
     ),
-  }));
-
-  const animatedLogHeaderStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-    opacity: itemOpacity.value,
-  }));
-
-  const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
-    width: interpolate(
-      translateX.value,
-      [rightSnapPoint, 0],
-      [-rightSnapPoint, 0]
-    ),
-    opacity: interpolate(translateX.value, [rightSnapPoint, 0], [1, 0.5]),
   }));
 
   const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
@@ -95,45 +95,14 @@ export function WorkoutLogItem({
   }));
 
   return (
-    <Animated.View style={[styles.workoutLogItem, animatedCollapseItemStyle]}>
-      <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
-        <Animated.View style={styles.workoutLogItemTapArea}>
-          <TapGestureHandler onGestureEvent={tapGestureEventHandler}>
-            <Animated.View
-              style={[styles.workoutLogHeader, animatedLogHeaderStyle]}
-            >
-              <Text style={styles.workoutLogItemText}>{logDate}</Text>
-              <Text style={styles.workoutLogDetailsText}>
-                {exerciseCount} exercise{exerciseCount === 1 ? ", " : "s, "}
-                {setCount} set{setCount === 1 ? "" : "s"}
-              </Text>
-            </Animated.View>
-          </TapGestureHandler>
-        </Animated.View>
-      </PanGestureHandler>
-      <Animated.View style={animatedHiddenAreaStyle}>
-        <Button
-          onPress={() =>
-            collapseTransition(() => {
-              dispatch(deleteWorkoutLog(_id));
-            }, 30)
-          }
-          style={styles.deleteButton}
-          color="red"
-        >
-          <AnimatedIonicon
-            name="trash"
-            color="white"
-            style={animatedIconStyle}
-          />
-          <Animated.Text
-            style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
-          >
-            Delete
-          </Animated.Text>
-        </Button>
-      </Animated.View>
-    </Animated.View>
+    <Button onPress={handleDelete} style={styles.deleteButton} color="red">
+      <AnimatedIonicon name="trash" color="white" style={animatedIconStyle} />
+      <Animated.Text
+        style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
+      >
+        Delete
+      </Animated.Text>
+    </Button>
   );
 }
 
@@ -143,15 +112,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
-  },
-  workoutLogItem: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  workoutLogItemTapArea: {
-    flex: 1,
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "lightgrey",
   },
   workoutLogItemText: {
     fontSize: 20,

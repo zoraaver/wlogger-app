@@ -1,23 +1,23 @@
+import { useNavigation } from "@react-navigation/core";
+import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { View } from "react-native";
 import { StyleSheet, Text } from "react-native";
-import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { useAppDispatch } from "..";
+import { WorkoutPlanStackParamList } from "../navigators/WorkoutPlanStackNavigator";
 import {
   deleteWorkoutPlan,
   workoutPlanHeaderData,
 } from "../slices/workoutPlansSlice";
 import { Helvetica } from "../util/constants";
-import {
-  useHorizontalSwipeHandler,
-  useVerticalCollapseTransition,
-} from "../util/hooks";
 import { AnimatedIonicon } from "./AnimatedIonicon";
 import { Button } from "./Button";
+import { Collapsible } from "./Collapsible";
+import { Swipeable } from "./Swipeable";
 
 interface WorkoutPlanItemProps {
   workoutPlan: workoutPlanHeaderData;
@@ -31,72 +31,31 @@ const maxIconSize = 30;
 
 export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
   const dispatch = useAppDispatch();
-
-  const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
-    snapPoints
-  );
-
-  const {
-    animatedCollapseItemStyle,
-    collapseTransition,
-  } = useVerticalCollapseTransition(workoutPlanItemInitialHeight, 300);
-
-  const animatedWorkoutPlanItemStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
-  const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
-    width: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [-rightMostSnapPoint, 0]
-    ),
-  }));
-
-  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxButtonFontSize, 0]
-    ),
-  }));
-
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxIconSize, 0]
-    ),
-  }));
-
-  function handleDelete() {
-    collapseTransition(() => dispatch(deleteWorkoutPlan(workoutPlan._id)));
-  }
+  const navigation = useNavigation<
+    StackNavigationProp<WorkoutPlanStackParamList>
+  >();
+  const [collapsed, setCollapsed] = React.useState(false);
 
   return (
-    <Animated.View style={[styles.wrapper, animatedCollapseItemStyle]}>
-      <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
-        <Animated.View
-          style={[styles.workoutPlanItem, animatedWorkoutPlanItemStyle]}
-        >
-          <WorkoutPlanDetails workoutPlan={workoutPlan} />
-        </Animated.View>
-      </PanGestureHandler>
-      <Animated.View style={animatedHiddenAreaStyle}>
-        <Button color="red" onPress={handleDelete} style={styles.deleteButton}>
-          <AnimatedIonicon
-            name="trash"
-            color="white"
-            style={animatedIconStyle}
+    <Collapsible
+      collapsed={collapsed}
+      initialHeight={workoutPlanItemInitialHeight}
+      onCollapsed={() => dispatch(deleteWorkoutPlan(workoutPlan._id))}
+    >
+      <Swipeable
+        rightArea={(translateX) => (
+          <WorkoutPlanItemDeleteButton
+            translateX={translateX}
+            handleDelete={() => setCollapsed(true)}
           />
-          <Animated.Text
-            style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
-          >
-            Delete
-          </Animated.Text>
-        </Button>
-      </Animated.View>
-    </Animated.View>
+        )}
+        snapPoints={snapPoints}
+        onPress={() => navigation.navigate("show", workoutPlan)}
+        mainAreaStyle={styles.workoutPlanItemTapArea}
+      >
+        <WorkoutPlanDetails workoutPlan={workoutPlan} />
+      </Swipeable>
+    </Collapsible>
   );
 }
 
@@ -115,7 +74,7 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
   return (
     <>
       <Text style={styles.workoutPlanHeaderText}>{workoutPlan.name}</Text>
-      <View>
+      <View style={styles.workoutPlanDetails}>
         <Text style={styles.workoutPlanItemText}>
           <Text style={styles.workoutPlanFieldText}>Status:</Text>{" "}
           {workoutPlan.status}
@@ -137,20 +96,50 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
   );
 }
 
+interface WorkoutPlanItemDeleteButton {
+  translateX: Animated.SharedValue<number>;
+  handleDelete: () => void;
+}
+
+function WorkoutPlanItemDeleteButton({
+  translateX,
+  handleDelete,
+}: WorkoutPlanItemDeleteButton) {
+  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
+    fontSize: interpolate(
+      translateX.value,
+      [rightMostSnapPoint, 0],
+      [maxButtonFontSize, 0]
+    ),
+  }));
+
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    fontSize: interpolate(
+      translateX.value,
+      [rightMostSnapPoint, 0],
+      [maxIconSize, 0]
+    ),
+  }));
+
+  return (
+    <Button color="red" onPress={handleDelete} style={styles.deleteButton}>
+      <AnimatedIonicon name="trash" color="white" style={animatedIconStyle} />
+      <Animated.Text
+        style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
+      >
+        Delete
+      </Animated.Text>
+    </Button>
+  );
+}
+
 const styles = StyleSheet.create({
-  wrapper: {
+  workoutPlanItemTapArea: {
     flex: 1,
     flexDirection: "row",
-    height: workoutPlanItemInitialHeight,
-    justifyContent: "flex-end",
-  },
-  workoutPlanItem: {
-    flex: 1,
-    backgroundColor: "white",
     justifyContent: "space-around",
     alignItems: "center",
-    flexDirection: "row",
-    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "white",
   },
   deleteButton: {
     flex: 1,
@@ -164,7 +153,6 @@ const styles = StyleSheet.create({
   workoutPlanItemText: {
     fontFamily: Helvetica,
     fontWeight: "300",
-    paddingVertical: 3,
   },
   workoutPlanHeaderText: {
     fontSize: 25,
@@ -173,5 +161,9 @@ const styles = StyleSheet.create({
   },
   workoutPlanFieldText: {
     fontWeight: "bold",
+  },
+  workoutPlanDetails: {
+    height: "80%",
+    justifyContent: "space-evenly",
   },
 });

@@ -16,16 +16,12 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useDerivedValue,
-  withTiming,
 } from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
 import { AnimatedIonicon } from "./AnimatedIonicon";
 import { useAppDispatch } from "..";
-import {
-  useHorizontalSwipeHandler,
-  useVerticalCollapseTransition,
-} from "../util/hooks";
 import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { Swipeable } from "./Swipeable";
+import { Collapsible } from "./Collapsible";
 
 interface WorkoutLogVideo {
   set: setLogData & {
@@ -52,53 +48,7 @@ export function WorkoutLogVideoRow({
 
   const rightMostSnapPoint = showDownload ? -160 : -80;
   const snapPoints: number[] = [rightMostSnapPoint, 0];
-
-  const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
-    snapPoints
-  );
-
-  const {
-    animatedCollapseItemStyle,
-    collapseTransition,
-  } = useVerticalCollapseTransition(rowInitialHeight, 300);
-
-  const buttonFontSize = useDerivedValue(() =>
-    interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxButtonFontSize, 0]
-    )
-  );
-  const hiddenAreaOpacity = useDerivedValue(() =>
-    interpolate(translateX.value, [rightMostSnapPoint, 0], [1, 0.5])
-  );
-  const iconFontSize = useDerivedValue(() =>
-    interpolate(translateX.value, [rightMostSnapPoint, 0], [maxIconSize, 0])
-  );
-
-  const animatedVideoRowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-  const animatedHiddenAreaStyle = useAnimatedStyle(() => ({
-    width: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [-rightMostSnapPoint, 0]
-    ),
-    opacity: hiddenAreaOpacity.value,
-  }));
-  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: buttonFontSize.value,
-  }));
-  const animatedDownloadButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: buttonFontSize.value,
-  }));
-  const animatedTrashIconStyle = useAnimatedStyle(() => ({
-    fontSize: iconFontSize.value,
-  }));
-  const animatedDownloadIconStyle = useAnimatedStyle(() => ({
-    fontSize: iconFontSize.value,
-  }));
+  const [collapsed, setCollapsed] = React.useState(false);
 
   const videoUrl =
     set.formVideoName ||
@@ -122,7 +72,7 @@ export function WorkoutLogVideoRow({
       android:
         "the video will appear under Videos > Pictures in the files app once completed.",
     });
-    const hideButtons = () => (translateX.value = withTiming(0));
+    const hideButtons = () => {};
     Alert.alert(
       "Download started",
       `Downloading ${videoTitle}: ${message}`,
@@ -132,85 +82,127 @@ export function WorkoutLogVideoRow({
   }
 
   return (
-    <Animated.View style={[styles.wrapper, animatedCollapseItemStyle]}>
-      <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
-        <Animated.View style={[styles.videoRow, animatedVideoRowStyle]}>
-          <Text style={styles.videoRowText}>
-            <Text style={styles.videoRowHeaderText}>
-              {set.exerciseName}
-              {"\n"}
-            </Text>
-            <Text>
-              {set.repetitions} x {set.weight} {set.unit}
-            </Text>
+    <Collapsible
+      initialHeight={rowInitialHeight}
+      collapsed={collapsed}
+      onCollapsed={deleteVideo}
+    >
+      <Swipeable
+        snapPoints={snapPoints}
+        mainAreaStyle={styles.videoRow}
+        rightArea={(translateX, snapPoints) => (
+          <WorkoutLogVideoButtons
+            handleDelete={() => setCollapsed(true)}
+            snapPoints={snapPoints}
+            handleDownload={showDownload ? handleDownloadVideo : undefined}
+            translateX={translateX}
+          />
+        )}
+      >
+        <Text style={styles.videoRowText}>
+          <Text style={styles.videoRowHeaderText}>
+            {set.exerciseName}
+            {"\n"}
           </Text>
-          <Button
-            onPress={() => {
-              const logIsNew = route.name === "logForm";
-              navigation.navigate(logIsNew ? "NewLog" : "Logs", {
-                screen: "showVideo",
-                params: { videoTitle, videoUrl, hideTabBar: !logIsNew },
-              });
-            }}
-            color={successColor}
-            style={styles.playButton}
-          >
-            <Ionicon name="play-circle-outline" size={35} color="aliceblue" />
-          </Button>
-        </Animated.View>
-      </PanGestureHandler>
-      <Animated.View style={[styles.hiddenArea, animatedHiddenAreaStyle]}>
-        {showDownload ? (
-          <Button onPress={handleDownloadVideo} style={styles.button}>
-            <AnimatedIonicon
-              name="download-outline"
-              color="white"
-              style={animatedDownloadIconStyle}
-            />
-            <Animated.Text
-              style={[styles.buttonText, animatedDownloadButtonTextStyle]}
-            >
-              Download
-            </Animated.Text>
-          </Button>
-        ) : null}
+          <Text>
+            {set.repetitions} x {set.weight} {set.unit}
+          </Text>
+        </Text>
         <Button
-          onPress={() => collapseTransition(deleteVideo)}
-          style={styles.button}
-          color="red"
+          onPress={() => {
+            const logIsNew = route.name === "logForm";
+            navigation.navigate(logIsNew ? "NewLog" : "Logs", {
+              screen: "showVideo",
+              params: { videoTitle, videoUrl, hideTabBar: !logIsNew },
+            });
+          }}
+          color={successColor}
+          style={styles.playButton}
         >
+          <Ionicon name="play-circle-outline" size={35} color="aliceblue" />
+        </Button>
+      </Swipeable>
+    </Collapsible>
+  );
+}
+
+interface WorkoutLogVideoButtonsProps {
+  snapPoints: number[];
+  translateX: Animated.SharedValue<number>;
+  handleDownload?: () => void;
+  handleDelete: () => void;
+}
+
+function WorkoutLogVideoButtons({
+  translateX,
+  handleDownload,
+  handleDelete,
+  snapPoints,
+}: WorkoutLogVideoButtonsProps) {
+  const rightMostSnapPoint = snapPoints[0];
+  const buttonFontSize = useDerivedValue(() =>
+    interpolate(
+      translateX.value,
+      [rightMostSnapPoint, 0],
+      [maxButtonFontSize, 0]
+    )
+  );
+  const iconFontSize = useDerivedValue(() =>
+    interpolate(translateX.value, [rightMostSnapPoint, 0], [maxIconSize, 0])
+  );
+  const animatedDownloadButtonTextStyle = useAnimatedStyle(() => ({
+    fontSize: buttonFontSize.value,
+  }));
+  const animatedDownloadIconStyle = useAnimatedStyle(() => ({
+    fontSize: iconFontSize.value,
+  }));
+  const animatedTrashIconStyle = useAnimatedStyle(() => ({
+    fontSize: iconFontSize.value,
+  }));
+  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
+    fontSize: buttonFontSize.value,
+  }));
+
+  return (
+    <>
+      {handleDownload ? (
+        <Button onPress={handleDownload} style={styles.button}>
           <AnimatedIonicon
-            name="trash"
+            name="download-outline"
             color="white"
-            style={animatedTrashIconStyle}
+            style={animatedDownloadIconStyle}
           />
           <Animated.Text
-            style={[styles.buttonText, animatedDeleteButtonTextStyle]}
+            style={[styles.buttonText, animatedDownloadButtonTextStyle]}
           >
-            Delete
+            Download
           </Animated.Text>
         </Button>
-      </Animated.View>
-    </Animated.View>
+      ) : null}
+      <Button onPress={handleDelete} style={styles.button} color="red">
+        <AnimatedIonicon
+          name="trash"
+          color="white"
+          style={animatedTrashIconStyle}
+        />
+        <Animated.Text
+          style={[styles.buttonText, animatedDeleteButtonTextStyle]}
+        >
+          Delete
+        </Animated.Text>
+      </Button>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
   videoRow: {
-    backgroundColor: "white",
     borderTopWidth: 0.2,
     borderBottomWidth: 0.2,
     alignItems: "center",
     justifyContent: "flex-start",
     flexDirection: "row",
     paddingHorizontal: 20,
-    flex: 1,
-    ...StyleSheet.absoluteFillObject,
   },
   videoRowText: {
     fontFamily: Helvetica,
@@ -227,9 +219,6 @@ const styles = StyleSheet.create({
     height: undefined,
     flex: 1,
     maxWidth: 45,
-  },
-  hiddenArea: {
-    flexDirection: "row",
   },
   button: {
     height: undefined,
