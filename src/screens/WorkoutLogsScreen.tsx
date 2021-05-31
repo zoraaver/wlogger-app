@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/core";
 import * as React from "react";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { HorizontalDivider } from "../components/HorizontalDivider";
@@ -24,16 +24,22 @@ export function WorkoutLogsScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom", "right", "left"]}>
+    <SafeAreaView
+      style={styles.workoutLogsScreen}
+      edges={["bottom", "right", "left"]}
+    >
       <FlatList
         style={{ flex: 1 }}
         data={workoutLogs}
         keyExtractor={(workoutLog: workoutLogHeaderData) => workoutLog._id}
         renderItem={(data) => <WorkoutLogItem workoutLog={data.item} />}
-        ItemSeparatorComponent={() => (
-          <HorizontalDivider backgroundColor="lightgrey" />
-        )}
+        ItemSeparatorComponent={() => <HorizontalDivider />}
+        ListFooterComponent={() => <HorizontalDivider />}
       />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  workoutLogsScreen: { flex: 1, backgroundColor: "lightyellow" },
+});
