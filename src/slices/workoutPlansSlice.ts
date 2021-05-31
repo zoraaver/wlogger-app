@@ -439,6 +439,10 @@ const slice = createSlice({
   },
 });
 
+export function totalSets(workout: workoutData): number {
+  return workout.exercises.reduce((acc, curr) => acc + curr.sets, 0);
+}
+
 export const workoutPlansReducer = slice.reducer;
 export const {
   setInitialWorkoutPlanData,
