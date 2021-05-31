@@ -37,7 +37,6 @@ export function WorkoutLogItem({
       collapsed={collapsed}
       initialHeight={workoutLogItemInitialHeight}
       onCollapsed={() => dispatch(deleteWorkoutLog(_id))}
-      delay={30}
     >
       <Swipeable
         snapPoints={snapPoints}
