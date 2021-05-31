@@ -1,8 +1,9 @@
 import * as React from "react";
 import Animated, {
   Easing,
+  interpolate,
+  runOnJS,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -12,26 +13,29 @@ interface CollapsibleProps {
   initialHeight: number;
   duration?: number;
   collapsed: boolean;
-  delay?: number;
   onCollapsed?: () => void;
+  onExpanded?: () => void;
 }
 
 export function Collapsible({
   children,
   initialHeight,
   duration = 300,
-  delay,
   collapsed,
   onCollapsed,
+  onExpanded,
 }: CollapsibleProps) {
   const {
     animatedCollapseItemStyle,
     collapseTransition,
+    expandTransition,
   } = useVerticalCollapseTransition(initialHeight, duration);
 
   React.useEffect(() => {
     if (collapsed) {
-      collapseTransition(onCollapsed, delay);
+      collapseTransition(onCollapsed);
+    } else {
+      expandTransition(onExpanded);
     }
   }, [collapsed]);
 
@@ -46,27 +50,34 @@ function useVerticalCollapseTransition(
 ) {
   const height = useSharedValue(initialHeight);
 
-  const opacity = useDerivedValue(() => {
-    return height.value / initialHeight;
-  });
-
   const animatedCollapseItemStyle = useAnimatedStyle(() => ({
     height: height.value,
-    opacity: opacity.value,
+    opacity: interpolate(height.value, [0, initialHeight], [0, 1]),
   }));
 
-  const collapseTransition = (
-    callback?: (...args: any[]) => any,
-    delay?: number
-  ) => {
-    height.value = withTiming(0, {
-      duration,
-      easing: Easing.inOut(Easing.ease),
-    });
-    if (callback) {
-      setTimeout(callback, duration + (delay ?? 0));
-    }
+  const collapseTransition = (callback?: (isFinished?: boolean) => void) => {
+    height.value = withTiming(
+      0,
+      { duration, easing: Easing.inOut(Easing.ease) },
+      (isFinished) => {
+        if (callback) {
+          runOnJS(callback)(isFinished);
+        }
+      }
+    );
   };
 
-  return { animatedCollapseItemStyle, collapseTransition, height };
+  const expandTransition = (callback?: (isFinished: boolean) => void) => {
+    height.value = withTiming(
+      initialHeight,
+      { duration, easing: Easing.inOut(Easing.ease) },
+      (isFinished) => {
+        if (callback) {
+          runOnJS(callback)(isFinished);
+        }
+      }
+    );
+  };
+
+  return { animatedCollapseItemStyle, collapseTransition, expandTransition };
 }
