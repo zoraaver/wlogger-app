@@ -4,12 +4,12 @@ import { View, Text } from "react-native";
 interface HorizontalDividerProps {
   height?: number;
   text?: string;
-  backgroundColor: string;
+  backgroundColor?: string;
 }
 export function HorizontalDivider({
   height = 1,
   text,
-  backgroundColor,
+  backgroundColor = "lightgrey",
 }: HorizontalDividerProps) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
