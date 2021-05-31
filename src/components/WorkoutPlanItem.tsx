@@ -3,10 +3,6 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { View } from "react-native";
 import { StyleSheet, Text } from "react-native";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-} from "react-native-reanimated";
 import { useAppDispatch } from "..";
 import { WorkoutPlanStackParamList } from "../navigators/WorkoutPlanStackNavigator";
 import {
@@ -14,8 +10,7 @@ import {
   workoutPlanHeaderData,
 } from "../slices/workoutPlansSlice";
 import { Helvetica } from "../util/constants";
-import { AnimatedIonicon } from "./AnimatedIonicon";
-import { Button } from "./Button";
+import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
 import { Collapsible } from "./Collapsible";
 import { Swipeable } from "./Swipeable";
 
@@ -23,11 +18,9 @@ interface WorkoutPlanItemProps {
   workoutPlan: workoutPlanHeaderData;
 }
 
-const rightMostSnapPoint = -100;
-const snapPoints = [rightMostSnapPoint, 0];
+const leftSnapPoint = -100;
+const snapPoints = [leftSnapPoint, 0];
 const workoutPlanItemInitialHeight = 120;
-const maxButtonFontSize = 15;
-const maxIconSize = 30;
 
 export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
   const dispatch = useAppDispatch();
@@ -44,14 +37,20 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
     >
       <Swipeable
         rightArea={(translateX) => (
-          <WorkoutPlanItemDeleteButton
+          <AnimatedSwipeButton
             translateX={translateX}
-            handleDelete={() => setCollapsed(true)}
+            leftSnapPoint={leftSnapPoint}
+            onPress={() => setCollapsed(true)}
+            color="red"
+            text="Delete"
+            iconName="trash"
+            maxTextFontSize={15}
+            maxIconSize={30}
           />
         )}
         snapPoints={snapPoints}
         onPress={() => navigation.navigate("show", workoutPlan)}
-        mainAreaStyle={styles.workoutPlanItemTapArea}
+        mainAreaStyle={styles.workoutPlanItem}
       >
         <WorkoutPlanDetails workoutPlan={workoutPlan} />
       </Swipeable>
@@ -96,59 +95,13 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
   );
 }
 
-interface WorkoutPlanItemDeleteButton {
-  translateX: Animated.SharedValue<number>;
-  handleDelete: () => void;
-}
-
-function WorkoutPlanItemDeleteButton({
-  translateX,
-  handleDelete,
-}: WorkoutPlanItemDeleteButton) {
-  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxButtonFontSize, 0]
-    ),
-  }));
-
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxIconSize, 0]
-    ),
-  }));
-
-  return (
-    <Button color="red" onPress={handleDelete} style={styles.deleteButton}>
-      <AnimatedIonicon name="trash" color="white" style={animatedIconStyle} />
-      <Animated.Text
-        style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
-      >
-        Delete
-      </Animated.Text>
-    </Button>
-  );
-}
-
 const styles = StyleSheet.create({
-  workoutPlanItemTapArea: {
+  workoutPlanItem: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: "white",
-  },
-  deleteButton: {
-    flex: 1,
-    height: undefined,
-    borderRadius: 0,
-  },
-  deleteButtonText: {
-    fontFamily: Helvetica,
-    color: "white",
   },
   workoutPlanItemText: {
     fontFamily: Helvetica,

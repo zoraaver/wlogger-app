@@ -9,24 +9,17 @@ import {
   workoutLogHeaderData,
 } from "../slices/workoutLogsSlice";
 import { Helvetica } from "../util/constants";
-import { Button } from "./Button";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-} from "react-native-reanimated";
-import { AnimatedIonicon } from "./AnimatedIonicon";
 import { Swipeable } from "./Swipeable";
 import { Collapsible } from "./Collapsible";
+import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
 
 interface WorkoutLogItemProps {
   workoutLog: workoutLogHeaderData;
 }
 
 const workoutLogItemInitialHeight = 80;
-const maxDeleteButtonFontSize = 10;
-const maxIconSize = 25;
-const rightSnapPoint = -100;
-const snapPoints: number[] = [rightSnapPoint, 0];
+const leftSnapPoint = -100;
+const snapPoints: number[] = [leftSnapPoint, 0];
 
 export function WorkoutLogItem({
   workoutLog: { createdAt, exerciseCount, setCount, _id },
@@ -49,9 +42,13 @@ export function WorkoutLogItem({
       <Swipeable
         snapPoints={snapPoints}
         rightArea={(translateX) => (
-          <WorkoutLogItemDeleteButton
+          <AnimatedSwipeButton
             translateX={translateX}
-            handleDelete={() => setCollapsed(true)}
+            onPress={() => setCollapsed(true)}
+            leftSnapPoint={leftSnapPoint}
+            color="red"
+            text="Delete"
+            iconName="trash"
           />
         )}
         mainAreaStyle={styles.workoutLogHeader}
@@ -69,43 +66,6 @@ export function WorkoutLogItem({
   );
 }
 
-interface WorkoutLogItemDeleteButtonProps {
-  translateX: Animated.SharedValue<number>;
-  handleDelete: () => void;
-}
-
-function WorkoutLogItemDeleteButton({
-  translateX,
-  handleDelete,
-}: WorkoutLogItemDeleteButtonProps) {
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightSnapPoint, 0],
-      [maxIconSize, 0]
-    ),
-  }));
-
-  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [rightSnapPoint, 0],
-      [maxDeleteButtonFontSize, 0]
-    ),
-  }));
-
-  return (
-    <Button onPress={handleDelete} style={styles.deleteButton} color="red">
-      <AnimatedIonicon name="trash" color="white" style={animatedIconStyle} />
-      <Animated.Text
-        style={[styles.deleteButtonText, animatedDeleteButtonTextStyle]}
-      >
-        Delete
-      </Animated.Text>
-    </Button>
-  );
-}
-
 const styles = StyleSheet.create({
   workoutLogHeader: {
     flex: 1,
@@ -120,15 +80,6 @@ const styles = StyleSheet.create({
   },
   workoutLogDetailsText: {
     fontWeight: "300",
-    fontFamily: Helvetica,
-  },
-  deleteButton: {
-    borderRadius: 0,
-    height: undefined,
-    flex: 1,
-  },
-  deleteButtonText: {
-    color: "white",
     fontFamily: Helvetica,
   },
 });

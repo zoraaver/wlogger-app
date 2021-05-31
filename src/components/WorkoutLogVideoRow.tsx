@@ -7,21 +7,16 @@ import {
   workoutLogData,
   workoutLogUrl,
 } from "../slices/workoutLogsSlice";
-import { Helvetica, successColor } from "../util/constants";
+import { Helvetica, primaryColor, successColor } from "../util/constants";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { Button } from "./Button";
 import { baseURL } from "../config/axios.config";
 import { useNavigation, useRoute } from "@react-navigation/core";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-} from "react-native-reanimated";
-import { AnimatedIonicon } from "./AnimatedIonicon";
 import { useAppDispatch } from "..";
 import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import { Swipeable } from "./Swipeable";
 import { Collapsible } from "./Collapsible";
+import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
 
 interface WorkoutLogVideo {
   set: setLogData & {
@@ -33,8 +28,6 @@ interface WorkoutLogVideo {
   showDownload?: boolean;
 }
 
-const maxButtonFontSize = 10;
-const maxIconSize = 25;
 const rowInitialHeight = 70;
 
 export function WorkoutLogVideoRow({
@@ -46,8 +39,8 @@ export function WorkoutLogVideoRow({
   const route = useRoute();
   const dispatch = useAppDispatch();
 
-  const rightMostSnapPoint = showDownload ? -160 : -80;
-  const snapPoints: number[] = [rightMostSnapPoint, 0];
+  const leftSnapPoint = showDownload ? -160 : -80;
+  const snapPoints: number[] = [leftSnapPoint, 0];
   const [collapsed, setCollapsed] = React.useState(false);
 
   const videoUrl =
@@ -72,13 +65,20 @@ export function WorkoutLogVideoRow({
       android:
         "the video will appear under Videos > Pictures in the files app once completed.",
     });
-    const hideButtons = () => {};
     Alert.alert(
       "Download started",
       `Downloading ${videoTitle}: ${message}`,
-      [{ text: "Ok", onPress: hideButtons }],
-      { cancelable: true, onDismiss: hideButtons }
+      [{ text: "Ok" }],
+      { cancelable: true }
     );
+  }
+
+  function handlePlayVideo() {
+    const logIsNew = route.name === "logForm";
+    navigation.navigate(logIsNew ? "NewLog" : "Logs", {
+      screen: "showVideo",
+      params: { videoTitle, videoUrl, hideTabBar: !logIsNew },
+    });
   }
 
   return (
@@ -90,13 +90,28 @@ export function WorkoutLogVideoRow({
       <Swipeable
         snapPoints={snapPoints}
         mainAreaStyle={styles.videoRow}
-        rightArea={(translateX, snapPoints) => (
-          <WorkoutLogVideoButtons
-            handleDelete={() => setCollapsed(true)}
-            snapPoints={snapPoints}
-            handleDownload={showDownload ? handleDownloadVideo : undefined}
-            translateX={translateX}
-          />
+        snapDuration={300}
+        rightArea={(translateX) => (
+          <>
+            {showDownload ? (
+              <AnimatedSwipeButton
+                leftSnapPoint={leftSnapPoint}
+                translateX={translateX}
+                color={primaryColor}
+                iconName="download-outline"
+                onPress={handleDownloadVideo}
+                text="Download"
+              />
+            ) : null}
+            <AnimatedSwipeButton
+              leftSnapPoint={leftSnapPoint}
+              translateX={translateX}
+              color="red"
+              iconName="trash"
+              onPress={() => setCollapsed(true)}
+              text="Delete"
+            />
+          </>
         )}
       >
         <Text style={styles.videoRowText}>
@@ -109,13 +124,7 @@ export function WorkoutLogVideoRow({
           </Text>
         </Text>
         <Button
-          onPress={() => {
-            const logIsNew = route.name === "logForm";
-            navigation.navigate(logIsNew ? "NewLog" : "Logs", {
-              screen: "showVideo",
-              params: { videoTitle, videoUrl, hideTabBar: !logIsNew },
-            });
-          }}
+          onPress={handlePlayVideo}
           color={successColor}
           style={styles.playButton}
         >
@@ -123,75 +132,6 @@ export function WorkoutLogVideoRow({
         </Button>
       </Swipeable>
     </Collapsible>
-  );
-}
-
-interface WorkoutLogVideoButtonsProps {
-  snapPoints: number[];
-  translateX: Animated.SharedValue<number>;
-  handleDownload?: () => void;
-  handleDelete: () => void;
-}
-
-function WorkoutLogVideoButtons({
-  translateX,
-  handleDownload,
-  handleDelete,
-  snapPoints,
-}: WorkoutLogVideoButtonsProps) {
-  const rightMostSnapPoint = snapPoints[0];
-  const buttonFontSize = useDerivedValue(() =>
-    interpolate(
-      translateX.value,
-      [rightMostSnapPoint, 0],
-      [maxButtonFontSize, 0]
-    )
-  );
-  const iconFontSize = useDerivedValue(() =>
-    interpolate(translateX.value, [rightMostSnapPoint, 0], [maxIconSize, 0])
-  );
-  const animatedDownloadButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: buttonFontSize.value,
-  }));
-  const animatedDownloadIconStyle = useAnimatedStyle(() => ({
-    fontSize: iconFontSize.value,
-  }));
-  const animatedTrashIconStyle = useAnimatedStyle(() => ({
-    fontSize: iconFontSize.value,
-  }));
-  const animatedDeleteButtonTextStyle = useAnimatedStyle(() => ({
-    fontSize: buttonFontSize.value,
-  }));
-
-  return (
-    <>
-      {handleDownload ? (
-        <Button onPress={handleDownload} style={styles.button}>
-          <AnimatedIonicon
-            name="download-outline"
-            color="white"
-            style={animatedDownloadIconStyle}
-          />
-          <Animated.Text
-            style={[styles.buttonText, animatedDownloadButtonTextStyle]}
-          >
-            Download
-          </Animated.Text>
-        </Button>
-      ) : null}
-      <Button onPress={handleDelete} style={styles.button} color="red">
-        <AnimatedIonicon
-          name="trash"
-          color="white"
-          style={animatedTrashIconStyle}
-        />
-        <Animated.Text
-          style={[styles.buttonText, animatedDeleteButtonTextStyle]}
-        >
-          Delete
-        </Animated.Text>
-      </Button>
-    </>
   );
 }
 
@@ -219,14 +159,5 @@ const styles = StyleSheet.create({
     height: undefined,
     flex: 1,
     maxWidth: 45,
-  },
-  button: {
-    height: undefined,
-    borderRadius: 0,
-    flex: 1,
-  },
-  buttonText: {
-    color: "white",
-    fontFamily: Helvetica,
   },
 });
