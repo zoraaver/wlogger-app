@@ -42,7 +42,7 @@ export function WorkoutPlanScreen() {
     >
       {workoutPlan?.weeks ? (
         <FlatList
-          style={{ flex: 1 }}
+          style={{ flex: 1, backgroundColor: "powderblue" }}
           data={workoutPlan.weeks}
           renderItem={({ item: week }) => (
             <WeekItem
@@ -54,31 +54,25 @@ export function WorkoutPlanScreen() {
           keyExtractor={(week) => week.position.toString()}
           ItemSeparatorComponent={() => <HorizontalDivider />}
           extraData={expandedWeek}
-          ListFooterComponent={() => (
-            <View style={styles.controls}>
-              <HorizontalDivider />
-              <Button
-                onPress={() => {}}
-                color={successColor}
-                style={styles.button}
-              >
-                <Text style={styles.buttonText}>Add week</Text>
-              </Button>
-              <Button onPress={() => {}} style={styles.button}>
-                <Text style={styles.buttonText}>Start Plan</Text>
-              </Button>
-            </View>
-          )}
+          ListFooterComponent={() => <HorizontalDivider />}
         />
       ) : (
         <ActivityIndicator size="large" color="black" />
       )}
+      <View style={styles.controls}>
+        <Button onPress={() => {}} color={successColor} style={styles.button}>
+          <Text style={styles.buttonText}>Add week</Text>
+        </Button>
+        <Button onPress={() => {}} style={styles.button}>
+          <Text style={styles.buttonText}>Start Plan</Text>
+        </Button>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  workoutPlanScreen: { flex: 1, backgroundColor: "lightyellow" },
+  workoutPlanScreen: { flex: 1, backgroundColor: "powderblue" },
   buttonText: { fontFamily: Helvetica, color: "white", fontSize: 18 },
   controls: { justifyContent: "center" },
   button: { margin: 10 },
