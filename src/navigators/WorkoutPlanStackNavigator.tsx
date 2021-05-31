@@ -2,12 +2,12 @@ import { createStackNavigator } from "@react-navigation/stack";
 import * as React from "react";
 import { WorkoutPlanScreen } from "../screens/WorkoutPlanScreen";
 import { WorkoutPlansScreen } from "../screens/WorkoutPlansScreen";
-import { workoutPlanData } from "../slices/workoutPlansSlice";
+import { workoutPlanHeaderData } from "../slices/workoutPlansSlice";
 import { headerStyles } from "./WorkoutLogStackNavigator";
 
 export type WorkoutPlanStackParamList = {
   index: undefined;
-  show: workoutPlanData;
+  show: workoutPlanHeaderData;
 };
 
 const Stack = createStackNavigator<WorkoutPlanStackParamList>();
