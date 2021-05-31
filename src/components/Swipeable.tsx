@@ -2,6 +2,7 @@ import * as React from "react";
 import { StyleSheet, View, ViewStyle } from "react-native";
 import Animated, {
   Easing,
+  Extrapolate,
   interpolate,
   runOnJS,
   useAnimatedGestureHandler,
@@ -28,6 +29,7 @@ interface SwipeableProps {
   onPress?: () => void;
   height?: number;
   mainAreaStyle?: ViewStyle;
+  duration?: number;
 }
 
 export function Swipeable({
@@ -37,9 +39,11 @@ export function Swipeable({
   onPress,
   height,
   mainAreaStyle,
+  duration = 250,
 }: SwipeableProps) {
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
-    snapPoints
+    snapPoints,
+    duration
   );
   const rightSnapPoint = snapPoints[0];
 
@@ -47,7 +51,10 @@ export function Swipeable({
     width: interpolate(
       translateX.value,
       [rightSnapPoint, 0],
-      [-rightSnapPoint, 0]
+      [-rightSnapPoint, 0],
+      {
+        extrapolateLeft: Extrapolate.EXTEND,
+      }
     ),
     opacity: interpolate(translateX.value, [rightSnapPoint, 0], [1, 0.5]),
   }));
@@ -58,7 +65,7 @@ export function Swipeable({
 
   return (
     <View style={[swipeableStyles.wrapper, { height }]}>
-      <PanGestureHandler onGestureEvent={panGestureEventHandler}>
+      <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
         <Animated.View
           style={[
             swipeableStyles.mainArea,
@@ -90,25 +97,25 @@ export function Swipeable({
   );
 }
 
-function useHorizontalSwipeHandler(snapPoints: number[]) {
+function useHorizontalSwipeHandler(snapPoints: number[], duration: number) {
   const translateX = useSharedValue(0);
 
   const panGestureEventHandler = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
-    { startingTranslateX: number }
+    { startX: number }
   >({
-    onStart: ({ translationX }, { startingTranslateX }) => {
-      startingTranslateX = translationX;
+    onStart: (_, ctx) => {
+      ctx.startX = translateX.value;
     },
-    onActive: ({ translationX }, { startingTranslateX }) => {
-      if (translationX + startingTranslateX <= 0) {
-        translateX.value = translationX + startingTranslateX;
+    onActive: ({ translationX }, ctx) => {
+      if (ctx.startX + translationX <= 0) {
+        translateX.value = ctx.startX + translationX;
       }
     },
     onEnd: ({ translationX, velocityX }) => {
       translateX.value = withTiming(
         findNearestSnapPoint(translationX, velocityX, snapPoints),
-        { easing: Easing.inOut(Easing.ease) }
+        { duration, easing: Easing.inOut(Easing.ease) }
       );
     },
   });
