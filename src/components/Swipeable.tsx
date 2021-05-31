@@ -70,22 +70,17 @@ export function Swipeable({
           style={[
             swipeableStyles.mainArea,
             { backgroundColor: onPress ? "lightgrey" : "white" },
-            onPress ? undefined : mainAreaStyle,
             animatedMainAreaStyle,
           ]}
         >
-          {onPress ? (
-            <SwipeableTapHandler
-              onPress={onPress}
-              snapPoints={snapPoints}
-              translateX={translateX}
-              style={mainAreaStyle}
-            >
-              {children}
-            </SwipeableTapHandler>
-          ) : (
-            children
-          )}
+          <SwipeableTapHandler
+            onPress={onPress}
+            snapPoints={snapPoints}
+            translateX={translateX}
+            style={mainAreaStyle}
+          >
+            {children}
+          </SwipeableTapHandler>
         </Animated.View>
       </PanGestureHandler>
       <Animated.View
@@ -175,8 +170,8 @@ function useSwipeableTapHandler(
         if (translateX.value !== 0 && includes(snapPoints, translateX.value)) {
           translateX.value = withTiming(0);
         } else {
-          itemOpacity.value = 0.7;
           if (tapCallBack) {
+            itemOpacity.value = 0.7;
             runOnJS(tapCallBack)();
           }
         }
@@ -199,6 +194,7 @@ const swipeableStyles = StyleSheet.create({
   mainArea: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "white",
+    flex: 1,
   },
   rightArea: {
     flexDirection: "row",
