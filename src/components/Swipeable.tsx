@@ -29,7 +29,7 @@ interface SwipeableProps {
   onPress?: () => void;
   height?: number;
   mainAreaStyle?: ViewStyle;
-  duration?: number;
+  snapDuration?: number;
 }
 
 export function Swipeable({
@@ -39,11 +39,11 @@ export function Swipeable({
   onPress,
   height,
   mainAreaStyle,
-  duration = 250,
+  snapDuration = 250,
 }: SwipeableProps) {
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
     snapPoints,
-    duration
+    snapDuration
   );
   const rightSnapPoint = snapPoints[0];
 
