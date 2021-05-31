@@ -2,6 +2,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { NavigationContainer } from "@react-navigation/native";
 import { configureStore } from "@reduxjs/toolkit";
 import * as React from "react";
+import { UIManager } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
   Provider,
@@ -41,6 +42,10 @@ GoogleSignin.configure({
   webClientId: googleWebClientId,
   scopes: ["email"],
 });
+
+if (UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export function Application() {
   return (
