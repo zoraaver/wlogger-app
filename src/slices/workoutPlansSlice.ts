@@ -242,9 +242,33 @@ const slice = createSlice({
           (w: workoutData) => w.dayOfWeek === day
         );
         if (workout) {
+          exerciseData.addedInCurrentSession = true;
           workout.exercises.push(exerciseData);
         }
       }
+    },
+    updateExercise(
+      state,
+      action: PayloadAction<{
+        weekPosition: number;
+        day: Day;
+        exerciseIndex: number;
+        updatedExercise: exerciseData;
+      }>
+    ) {
+      const {
+        weekPosition,
+        day,
+        exerciseIndex,
+        updatedExercise,
+      } = action.payload;
+      const week = state.editWorkoutPlan?.weeks.find(
+        (week: weekData) => week.position === weekPosition
+      );
+      const workout = week?.workouts.find(
+        (workout) => workout.dayOfWeek === day
+      );
+      workout?.exercises.splice(exerciseIndex, 1, updatedExercise);
     },
     deleteExercise(
       state,
@@ -449,6 +473,7 @@ export const {
   addWeek,
   addWorkout,
   addExercise,
+  updateExercise,
   deleteExercise,
   deleteWeek,
   deleteWorkout,
