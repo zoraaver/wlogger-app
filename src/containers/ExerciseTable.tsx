@@ -6,29 +6,31 @@ import { Table } from "./Table";
 
 interface ExerciseTableProps {
   workout: workoutData;
-  width?: number;
-  weekPosition?: number;
+  editButton?: (exerciseIndex: number) => JSX.Element;
 }
 
-export function ExerciseTable({ workout }: ExerciseTableProps) {
+export function ExerciseTable({ workout, editButton }: ExerciseTableProps) {
   return (
-    <Table<exerciseData, JSX.Element>
+    <Table
       color="white"
       borderWidth={0.3}
       stripeColor="#dfe3eb"
       headerTextStyle={styles.headerRowText}
-      headers={["Exercise", "Sets x reps", "Weight"]}
+      headers={["Exercise", "Sets x reps", "Weight"].concat(
+        editButton ? [""] : []
+      )}
       data={workout.exercises}
-      mapRowDataToCells={(exerciseData: exerciseData) => {
+      mapRowDataToCells={(
+        exerciseData: exerciseData,
+        exerciseIndex: number
+      ) => {
         return [
-          <Text style={styles.cellText}>{exerciseData.name}</Text>,
-          <Text style={styles.cellText}>
-            {exerciseData.sets} x {exerciseData.repetitions}
-          </Text>,
-          <Text style={styles.cellText}>
-            {exerciseData.weight} {exerciseData.unit}
-          </Text>,
-        ];
+          exerciseData.name,
+          `${exerciseData.sets} x ${exerciseData.repetitions}`,
+          `${exerciseData.weight} ${exerciseData.unit}`,
+        ]
+          .map((cellText) => <Text style={styles.cellText}>{cellText}</Text>)
+          .concat(editButton ? [editButton(exerciseIndex)] : []);
       }}
     />
   );
