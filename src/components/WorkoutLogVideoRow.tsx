@@ -28,8 +28,6 @@ interface WorkoutLogVideo {
   showDownload?: boolean;
 }
 
-const rowInitialHeight = 70;
-
 export function WorkoutLogVideoRow({
   set,
   deleteVideo,
@@ -82,14 +80,11 @@ export function WorkoutLogVideoRow({
   }
 
   return (
-    <Collapsible
-      initialHeight={rowInitialHeight}
-      collapsed={collapsed}
-      onCollapsed={deleteVideo}
-    >
+    <Collapsible collapsed={collapsed} onCollapsed={deleteVideo}>
       <Swipeable
         snapPoints={snapPoints}
         mainAreaStyle={styles.videoRow}
+        height={70}
         snapDuration={300}
         rightArea={(translateX) => (
           <>

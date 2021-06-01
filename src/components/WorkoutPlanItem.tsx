@@ -20,7 +20,6 @@ interface WorkoutPlanItemProps {
 
 const leftSnapPoint = -100;
 const snapPoints = [leftSnapPoint, 0];
-const workoutPlanItemInitialHeight = 120;
 
 export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
   const dispatch = useAppDispatch();
@@ -32,7 +31,6 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
   return (
     <Collapsible
       collapsed={collapsed}
-      initialHeight={workoutPlanItemInitialHeight}
       onCollapsed={() => dispatch(deleteWorkoutPlan(workoutPlan._id))}
     >
       <Swipeable
@@ -49,6 +47,7 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
           />
         )}
         snapPoints={snapPoints}
+        height={120}
         onPress={() => navigation.navigate("show", workoutPlan)}
         mainAreaStyle={styles.workoutPlanItem}
       >

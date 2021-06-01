@@ -35,11 +35,11 @@ export function WorkoutLogItem({
   return (
     <Collapsible
       collapsed={collapsed}
-      initialHeight={workoutLogItemInitialHeight}
       onCollapsed={() => dispatch(deleteWorkoutLog(_id))}
     >
       <Swipeable
         snapPoints={snapPoints}
+        height={workoutLogItemInitialHeight}
         rightArea={(translateX) => (
           <AnimatedSwipeButton
             translateX={translateX}
