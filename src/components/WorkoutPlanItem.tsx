@@ -1,10 +1,9 @@
 import { useNavigation } from "@react-navigation/core";
-import { StackNavigationProp } from "@react-navigation/stack";
 import * as React from "react";
 import { View } from "react-native";
 import { StyleSheet, Text } from "react-native";
 import { useAppDispatch } from "..";
-import { WorkoutPlanStackParamList } from "../navigators/WorkoutPlanStackNavigator";
+import { WorkoutPlanNavigation } from "../navigators/WorkoutPlanStackNavigator";
 import {
   deleteWorkoutPlan,
   workoutPlanHeaderData,
@@ -23,9 +22,7 @@ const snapPoints = [leftSnapPoint, 0];
 
 export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<
-    StackNavigationProp<WorkoutPlanStackParamList>
-  >();
+  const navigation = useNavigation<WorkoutPlanNavigation>();
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (
