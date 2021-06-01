@@ -18,7 +18,7 @@ export enum MergeCell {
 
 interface TableProps<RowData, CellData> {
   data: RowData[];
-  mapRowDataToCells: (rowData: RowData) => CellData[];
+  mapRowDataToCells: (rowData: RowData, rowIndex: number) => CellData[];
   mergeCell?: (
     rowIndex: number,
     cellIndex: number,
@@ -112,7 +112,8 @@ function renderRows<RowData, CellData>(
       cellColors,
       mergeCellPartial,
       borderWidth,
-      rowColor
+      rowColor,
+      rowIndex
     );
 
     cellColors.previousRow = [...cellColors.currentRow];
@@ -129,9 +130,10 @@ function renderCells<RowData, CellData>(
   cellColors: RowCellColors,
   mergeCell: (cellIndex: number) => void | MergeCell | undefined,
   borderWidth: TableProps<RowData, CellData>["borderWidth"],
-  rowColor: string | undefined
+  rowColor: string | undefined,
+  rowIndex: number
 ): JSX.Element[] {
-  return mapRowDataToCells(rowData).map(
+  return mapRowDataToCells(rowData, rowIndex).map(
     (cellData: CellData, cellIndex: number) => {
       const cellStyle: StyleProp<ViewStyle> = calculateCellStyle(
         mergeCell?.(cellIndex),
