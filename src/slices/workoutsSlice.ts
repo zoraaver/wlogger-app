@@ -19,6 +19,7 @@ export interface exerciseData {
   unit: weightUnit;
   _id?: string;
   autoIncrement?: { field: incrementField; amount: number };
+  addedInCurrentSession?: boolean;
 }
 
 export interface workoutData {
