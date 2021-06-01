@@ -1,4 +1,4 @@
-import { useFocusEffect, useRoute } from "@react-navigation/core";
+import { useRoute } from "@react-navigation/core";
 import { RouteProp } from "@react-navigation/native";
 import * as React from "react";
 import {
@@ -28,11 +28,9 @@ export function WorkoutPlanScreen() {
     (state) => state.workoutPlans.editWorkoutPlan
   );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      dispatch(getWorkoutPlan(_id));
-    }, [])
-  );
+  React.useEffect(() => {
+    dispatch(getWorkoutPlan(_id));
+  }, [_id]);
   const [expandedWeek, setExpandedWeek] = React.useState(-1);
 
   return (
