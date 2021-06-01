@@ -1,18 +1,13 @@
 import * as React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  LayoutAnimation,
-  UIManager,
-} from "react-native";
+import { View, Text, StyleSheet, LayoutAnimation } from "react-native";
 import { useAppDispatch } from "..";
-import { deleteWeek, totalSets, weekData } from "../slices/workoutPlansSlice";
-import { workoutData } from "../slices/workoutsSlice";
+import { deleteWeek, weekData } from "../slices/workoutPlansSlice";
 import { Helvetica } from "../util/constants";
 import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
-import { Collapsible } from "./Collapsible";
+import { Button } from "./Button";
 import { Swipeable } from "./Swipeable";
+import { WorkoutItem } from "./WorkoutItem";
+import Ionicon from "react-native-vector-icons/Ionicons";
 
 interface WeekItemProps {
   week: weekData;
@@ -21,26 +16,24 @@ interface WeekItemProps {
 }
 
 const snapPoints = [-100, 0];
-const workoutItemHeight = 50;
 
-if (UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+function weekHeader(week: weekData) {
+  if (week.repeat) {
+    return `Weeks ${week.position} - ${week.position + week.repeat}`;
+  } else {
+    return `Week ${week.position}`;
+  }
 }
-LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
 export function WeekItem({ week, expanded, setExpanded }: WeekItemProps) {
-  const workoutDaysHeight = week.workouts.length * workoutItemHeight;
   const dispatch = useAppDispatch();
-
-  function weekHeader() {
-    if (week.repeat) {
-      return `Weeks ${week.position} - ${week.position + week.repeat}`;
-    } else {
-      return `Week ${week.position}`;
-    }
-  }
+  const weekTitle = weekHeader(week);
 
   function toggleExpand() {
+    LayoutAnimation.configureNext({
+      ...LayoutAnimation.Presets.linear,
+      duration: 250,
+    });
     if (!expanded) {
       setExpanded(week.position);
     } else {
@@ -49,7 +42,15 @@ export function WeekItem({ week, expanded, setExpanded }: WeekItemProps) {
   }
 
   function handleDelete() {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.linear);
+    LayoutAnimation.configureNext({
+      update: {
+        type: "easeInEaseOut",
+        property: "scaleY",
+        ...LayoutAnimation.Presets.easeInEaseOut.update,
+      },
+      duration: 300,
+      delete: LayoutAnimation.Presets.easeInEaseOut.delete,
+    });
     dispatch(deleteWeek(week.position));
   }
 
@@ -72,40 +73,31 @@ export function WeekItem({ week, expanded, setExpanded }: WeekItemProps) {
         )}
       >
         <Text style={styles.itemText}>
-          <Text style={{ fontWeight: "bold", fontSize: 20 }}>
-            {weekHeader()}
-          </Text>
+          <Text style={{ fontWeight: "bold", fontSize: 20 }}>{weekTitle}</Text>
           {"\n"}
           {week.workouts.length} workout
           {week.workouts.length === 1 ? null : "s"}
         </Text>
       </Swipeable>
-      <Collapsible initialHeight={workoutDaysHeight} collapsed={!expanded}>
+      {expanded ? (
         <View style={{ flex: 1 }}>
+          {week.workouts.length !== 7 ? (
+            <Button onPress={() => {}} color="lightgreen" style={styles.button}>
+              <Ionicon name="add" size={18} />
+              <Text style={styles.buttonText}>workout</Text>
+            </Button>
+          ) : null}
           {week.workouts.map((workout) => (
-            <WorkoutItem workout={workout} key={workout.dayOfWeek} />
+            <WorkoutItem
+              workout={workout}
+              weekPosition={week.position}
+              weekTitle={weekTitle}
+              key={workout.dayOfWeek}
+            />
           ))}
         </View>
-      </Collapsible>
+      ) : null}
     </>
-  );
-}
-
-interface WorkoutItemProps {
-  workout: workoutData;
-}
-
-function WorkoutItem({ workout }: WorkoutItemProps) {
-  const totalNumberOfSets = totalSets(workout);
-  return (
-    <View key={workout.dayOfWeek} style={styles.workoutItem}>
-      <Text style={styles.itemText}>
-        <Text style={{ fontWeight: "bold" }}>{workout.dayOfWeek}: </Text>
-        {workout.exercises.length} exercise
-        {workout.exercises.length === 1 ? null : "s"}, {totalNumberOfSets} set
-        {totalNumberOfSets === 1 ? null : "s"}
-      </Text>
-    </View>
   );
 }
 
@@ -125,12 +117,19 @@ const styles = StyleSheet.create({
   workoutItem: {
     backgroundColor: "aliceblue",
     borderTopWidth: 0.2,
-    maxHeight: workoutItemHeight,
+    height: 50,
     flex: 1,
     borderTopColor: "lightgrey",
     justifyContent: "center",
     alignItems: "flex-start",
     paddingLeft: 20,
   },
-  itemHeaderText: {},
+  buttonText: {
+    fontFamily: Helvetica,
+    fontSize: 18,
+    fontWeight: "300",
+    color: "black",
+    textAlignVertical: "center",
+  },
+  button: { borderRadius: 0, flexDirection: "row", alignItems: "center" },
 });
