@@ -9,6 +9,7 @@ import {
   workoutPlanHeaderData,
 } from "../slices/workoutPlansSlice";
 import { Helvetica } from "../util/constants";
+import { DDMMYYYYDateFormat } from "../util/util";
 import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
 import { Collapsible } from "./Collapsible";
 import { Swipeable } from "./Swipeable";
@@ -34,7 +35,7 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
         rightArea={(translateX) => (
           <AnimatedSwipeButton
             translateX={translateX}
-            leftSnapPoint={leftSnapPoint}
+            snapPoint={leftSnapPoint}
             onPress={() => setCollapsed(true)}
             color="red"
             text="Delete"
@@ -59,13 +60,6 @@ interface WorkoutPlanDetailsProps {
 }
 
 function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
-  const startDate = workoutPlan.start
-    ? new Date(workoutPlan.start).toDateString()
-    : "-";
-  const endDate = workoutPlan.end
-    ? new Date(workoutPlan.end).toDateString()
-    : "-";
-
   return (
     <>
       <Text style={styles.workoutPlanHeaderText}>{workoutPlan.name}</Text>
@@ -81,10 +75,15 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
         </Text>
         <Text style={styles.workoutPlanItemText}>
           <Text style={styles.workoutPlanFieldText}>Start date:</Text>{" "}
-          {startDate}
+          {workoutPlan.status === "Not started"
+            ? "-"
+            : DDMMYYYYDateFormat(workoutPlan.start)}
         </Text>
         <Text style={styles.workoutPlanItemText}>
-          <Text style={styles.workoutPlanFieldText}>End date:</Text> {endDate}
+          <Text style={styles.workoutPlanFieldText}>End date:</Text>{" "}
+          {workoutPlan.status === "Completed"
+            ? DDMMYYYYDateFormat(workoutPlan.end)
+            : "-"}
         </Text>
       </View>
     </>
