@@ -9,6 +9,7 @@ export type workoutPlanStatus = "In progress" | "Completed" | "Not started";
 
 export interface workoutPlanData {
   start?: string;
+  end?: string;
   _id?: string;
   name: string;
   length?: number;
@@ -24,14 +25,17 @@ export interface weekData {
 
 export type weightUnit = "kg" | "lb";
 
-export type Day =
-  | "Monday"
-  | "Tuesday"
-  | "Wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday"
-  | "Sunday";
+export const weekDays = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+export type Day = typeof weekDays[number];
 
 export interface workoutPlanHeaderData {
   name: string;
@@ -59,6 +63,7 @@ interface workoutPlanState {
   editWorkoutPlan: workoutPlanData | undefined;
   currentPlan?: workoutPlanHeaderData;
   success: string | undefined;
+  planUpdateInProgress?: boolean;
 }
 
 export const postWorkoutPlan = createAsyncThunk(
@@ -193,6 +198,13 @@ const initialState: workoutPlanState = {
   error: undefined,
 };
 
+interface WorkoutPosition {
+  weekPosition: number;
+  day: Day;
+}
+
+type ExercisePosition = WorkoutPosition & { exerciseIndex: number };
+
 const slice = createSlice({
   name: "workoutPlans",
   initialState,
@@ -201,17 +213,26 @@ const slice = createSlice({
       state.editWorkoutPlan = action.payload;
       state.editWorkoutPlan.length = 0;
     },
-    addWeek(state, action: PayloadAction<weekData>) {
+    addWeek(state, action: PayloadAction<weekData | undefined>) {
       if (!state.editWorkoutPlan) return;
-      state.editWorkoutPlan.weeks.push(action.payload);
+      if (action.payload) {
+        state.editWorkoutPlan.weeks.push(action.payload);
+      } else {
+        const nextWeekPosition = calculateLength(state.editWorkoutPlan) + 1;
+        state.editWorkoutPlan.weeks.push({
+          position: nextWeekPosition,
+          repeat: 0,
+          workouts: [],
+        });
+      }
       state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
     },
-    addWorkout(state, action: PayloadAction<{ position: number; day: Day }>) {
-      const { position, day } = action.payload;
+    addWorkout(state, action: PayloadAction<WorkoutPosition>) {
+      const { weekPosition, day } = action.payload;
       const weekIndex:
         | number
         | undefined = state.editWorkoutPlan?.weeks.findIndex(
-        (week: weekData) => week.position === position
+        (week: weekData) => week.position === weekPosition
       );
       if (weekIndex !== undefined && weekIndex >= 0) {
         state.editWorkoutPlan?.weeks[weekIndex].workouts.push({
@@ -225,17 +246,17 @@ const slice = createSlice({
     },
     addExercise(
       state,
-      action: PayloadAction<{
-        position: number;
-        day: Day;
-        exerciseData: exerciseData;
-      }>
+      action: PayloadAction<
+        WorkoutPosition & {
+          exerciseData: exerciseData;
+        }
+      >
     ) {
-      const { position, day, exerciseData } = action.payload;
+      const { weekPosition, day, exerciseData } = action.payload;
       const weekIndex:
         | number
         | undefined = state.editWorkoutPlan?.weeks.findIndex(
-        (week: weekData) => week.position === position
+        (week: weekData) => week.position === weekPosition
       );
       if (weekIndex !== undefined && weekIndex >= 0) {
         const workout = state.editWorkoutPlan?.weeks[weekIndex].workouts.find(
@@ -249,12 +270,9 @@ const slice = createSlice({
     },
     updateExercise(
       state,
-      action: PayloadAction<{
-        weekPosition: number;
-        day: Day;
-        exerciseIndex: number;
-        updatedExercise: exerciseData;
-      }>
+      action: PayloadAction<
+        ExercisePosition & { updatedExercise: exerciseData }
+      >
     ) {
       const {
         weekPosition,
@@ -270,14 +288,7 @@ const slice = createSlice({
       );
       workout?.exercises.splice(exerciseIndex, 1, updatedExercise);
     },
-    deleteExercise(
-      state,
-      action: PayloadAction<{
-        weekPosition: number;
-        day: Day;
-        exerciseIndex: number;
-      }>
-    ) {
+    deleteExercise(state, action: PayloadAction<ExercisePosition>) {
       const { weekPosition, day, exerciseIndex } = action.payload;
       const week = state.editWorkoutPlan?.weeks.find(
         (week: weekData) => week.position === weekPosition
@@ -308,14 +319,11 @@ const slice = createSlice({
         state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
       }
     },
-    deleteWorkout(
-      state,
-      action: PayloadAction<{ position: number; day: Day }>
-    ) {
+    deleteWorkout(state, action: PayloadAction<WorkoutPosition>) {
       if (!state.editWorkoutPlan) return;
-      const { position, day } = action.payload;
+      const { weekPosition, day } = action.payload;
       const week = state.editWorkoutPlan.weeks.find(
-        (week: weekData) => week.position === position
+        (week: weekData) => week.position === weekPosition
       );
       if (week !== undefined) {
         const workoutToDeleteIndex = week.workouts.findIndex(
@@ -340,14 +348,15 @@ const slice = createSlice({
     },
     changeWeekRepeat(
       state,
-      action: PayloadAction<{ position: number; newRepeat: number }>
+      action: PayloadAction<{ weekPosition: number; newRepeat: number }>
     ) {
       if (!state.editWorkoutPlan) return;
-      const { position, newRepeat } = action.payload;
+      const { weekPosition, newRepeat } = action.payload;
+      if (newRepeat < 0) return;
       const weekToChange:
         | weekData
         | undefined = state.editWorkoutPlan.weeks.find(
-        (week: weekData) => week.position === position
+        (week: weekData) => week.position === weekPosition
       );
       if (!weekToChange) return;
       state.editWorkoutPlan.weeks.forEach((week: weekData) => {
@@ -404,6 +413,7 @@ const slice = createSlice({
         state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
         state.success = `${action.payload.name} successfully updated`;
         state.error = undefined;
+        state.planUpdateInProgress = false;
       }
     );
     builder.addCase(
@@ -411,6 +421,13 @@ const slice = createSlice({
       (state, action: PayloadAction<unknown>) => {
         state.editWorkoutPlan = undefined;
         state.error = (action.payload as { message: string }).message;
+        state.planUpdateInProgress = false;
+      }
+    );
+    builder.addCase(
+      patchWorkoutPlan.pending,
+      (state, action: PayloadAction<unknown>) => {
+        state.planUpdateInProgress = true;
       }
     );
     builder.addCase(
@@ -445,6 +462,11 @@ const slice = createSlice({
         if (currentPlan) {
           currentPlan.status = "In progress";
           currentPlan.start = action.payload.start;
+          // update plan being edited if necessary
+          if (currentPlan._id === state.editWorkoutPlan?._id) {
+            state.editWorkoutPlan.status = "In progress";
+            state.editWorkoutPlan.start = action.payload.start;
+          }
         }
       }
     );
@@ -465,6 +487,11 @@ const slice = createSlice({
 
 export function totalSets(workout: workoutData): number {
   return workout.exercises.reduce((acc, curr) => acc + curr.sets, 0);
+}
+
+export function findRemainingWeekDays(week: weekData | undefined): Day[] {
+  const takenDays = week?.workouts.map((workout) => workout.dayOfWeek);
+  return weekDays.filter((weekDay) => !takenDays?.includes(weekDay));
 }
 
 export const workoutPlansReducer = slice.reducer;
