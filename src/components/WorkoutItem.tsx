@@ -1,10 +1,17 @@
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, LayoutAnimation } from "react-native";
+import { useAppDispatch } from "..";
 import { WorkoutPlanNavigation } from "../navigators/WorkoutPlanStackNavigator";
-import { weekData, totalSets } from "../slices/workoutPlansSlice";
+import {
+  weekData,
+  totalSets,
+  deleteWorkout,
+} from "../slices/workoutPlansSlice";
 import { workoutData } from "../slices/workoutsSlice";
 import { Helvetica } from "../util/constants";
+import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
+import { Swipeable } from "./Swipeable";
 
 interface WorkoutItemProps {
   workout: workoutData;
@@ -12,19 +19,31 @@ interface WorkoutItemProps {
   weekPosition: weekData["position"];
 }
 
+const leftSnapPoint = -70;
+const snapPoints = [leftSnapPoint, 0];
+
 export function WorkoutItem({
   workout,
   weekTitle,
   weekPosition,
 }: WorkoutItemProps) {
-  const totalNumberOfSets = totalSets(workout);
   const navigation = useNavigation<WorkoutPlanNavigation>();
+  const dispatch = useAppDispatch();
+
   const workoutTitle = `${weekTitle} : ${workout.dayOfWeek}`;
+  const totalNumberOfSets = totalSets(workout);
+
+  function handleDeleteWorkout() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    dispatch(deleteWorkout({ weekPosition, day: workout.dayOfWeek }));
+  }
+
   return (
-    <TouchableOpacity
+    <Swipeable
       key={workout.dayOfWeek}
-      style={styles.workoutItem}
-      activeOpacity={0.7}
+      mainAreaStyle={styles.workoutItem}
+      snapPoints={snapPoints}
+      height={50}
       onPress={() =>
         navigation.navigate("showWorkout", {
           dayOfWeek: workout.dayOfWeek,
@@ -32,6 +51,16 @@ export function WorkoutItem({
           title: workoutTitle,
         })
       }
+      rightArea={(translateX) => (
+        <AnimatedSwipeButton
+          leftSnapPoint={leftSnapPoint}
+          translateX={translateX}
+          color="red"
+          iconName="trash"
+          text="Delete"
+          onPress={handleDeleteWorkout}
+        />
+      )}
     >
       <Text style={styles.itemText}>
         <Text style={{ fontWeight: "bold" }}>{workout.dayOfWeek}: </Text>
@@ -39,7 +68,7 @@ export function WorkoutItem({
         {workout.exercises.length === 1 ? null : "s"}, {totalNumberOfSets} set
         {totalNumberOfSets === 1 ? null : "s"}
       </Text>
-    </TouchableOpacity>
+    </Swipeable>
   );
 }
 
@@ -53,7 +82,6 @@ const styles = StyleSheet.create({
   workoutItem: {
     backgroundColor: "aliceblue",
     borderTopWidth: 0.2,
-    height: 50,
     flex: 1,
     borderTopColor: "lightgrey",
     justifyContent: "center",
