@@ -82,7 +82,7 @@ export function WorkoutPlanScreen() {
         style={[
           styles.workoutPlanScreen,
           {
-            opacity: newWorkoutModalVisible ? 0.3 : undefined,
+            opacity: newWorkoutModalVisible ? 0.2 : undefined,
           },
         ]}
       >
@@ -150,20 +150,21 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
     <View style={styles.planDetails}>
       <View>
         <Text style={styles.planDetailsText}>
-          Status: {workoutPlan.status}
+          <Text style={styles.detailLabel}>Status:</Text> {workoutPlan.status}
           {"\n"}
-          Length: {workoutPlan.length} week
+          <Text style={styles.detailLabel}>Length: </Text>
+          {workoutPlan.length} week
           {workoutPlan.length === 1 ? null : "s"}
         </Text>
       </View>
       <View>
         <Text style={styles.planDetailsText}>
-          Start date:{" "}
+          <Text style={styles.detailLabel}>Start date: </Text>
           {workoutPlan.status === "Not started"
             ? "-"
             : DDMMYYYYDateFormat(workoutPlan.start)}
           {"\n"}
-          End date:{" "}
+          <Text style={styles.detailLabel}>End date: </Text>
           {workoutPlan?.status === "Completed"
             ? DDMMYYYYDateFormat(workoutPlan.end)
             : "-"}
@@ -189,5 +190,8 @@ const styles = StyleSheet.create({
     fontFamily: Helvetica,
     fontSize: 18,
     lineHeight: 35,
+  },
+  detailLabel: {
+    fontWeight: "bold",
   },
 });
