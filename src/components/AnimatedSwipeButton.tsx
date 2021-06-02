@@ -20,7 +20,7 @@ const AnimatedIonicon = Animated.createAnimatedComponent(Ionicon);
 
 interface AnimatedSwipeButtonProps {
   translateX: Animated.SharedValue<number>;
-  leftSnapPoint: number;
+  snapPoint: number;
   onPress?: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   color?: string;
   style?: StyleProp<ViewStyle>;
@@ -43,23 +43,35 @@ export function AnimatedSwipeButton({
   maxTextFontSize = 10,
   iconColor = "white",
   text,
-  leftSnapPoint,
+  snapPoint,
 }: AnimatedSwipeButtonProps) {
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      translateX.value,
-      [leftSnapPoint, 0],
-      [maxIconSize, 0],
-      { extrapolateLeft: Extrapolate.CLAMP }
-    ),
-  }));
+  let sizeExtrapolation: {
+    extrapolateLeft?: Animated.Extrapolate;
+    extrapolateRight?: Animated.Extrapolate;
+  } = {};
+
+  sizeExtrapolation.extrapolateLeft = Extrapolate.CLAMP;
+  const inputRange = [snapPoint, 0];
+  const iconSizeOutputRange = [maxIconSize, 0];
+  const textFontSizeRange = [maxTextFontSize, 0];
+
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      fontSize: interpolate(
+        translateX.value,
+        inputRange,
+        iconSizeOutputRange,
+        sizeExtrapolation
+      ),
+    };
+  });
 
   const animatedTextStyle = useAnimatedStyle(() => ({
     fontSize: interpolate(
       translateX.value,
-      [leftSnapPoint, 0],
-      [maxTextFontSize, 0],
-      { extrapolateLeft: Extrapolate.CLAMP }
+      inputRange,
+      textFontSizeRange,
+      sizeExtrapolation
     ),
   }));
 
