@@ -53,7 +53,7 @@ export function WorkoutItem({
       }
       rightArea={(translateX) => (
         <AnimatedSwipeButton
-          leftSnapPoint={leftSnapPoint}
+          snapPoint={leftSnapPoint}
           translateX={translateX}
           color="red"
           iconName="trash"

@@ -44,7 +44,7 @@ export function WorkoutLogItem({
           <AnimatedSwipeButton
             translateX={translateX}
             onPress={() => setCollapsed(true)}
-            leftSnapPoint={leftSnapPoint}
+            snapPoint={leftSnapPoint}
             color="red"
             text="Delete"
             iconName="trash"

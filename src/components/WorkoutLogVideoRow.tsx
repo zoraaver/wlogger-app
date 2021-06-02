@@ -90,7 +90,7 @@ export function WorkoutLogVideoRow({
           <>
             {showDownload ? (
               <AnimatedSwipeButton
-                leftSnapPoint={leftSnapPoint}
+                snapPoint={leftSnapPoint}
                 translateX={translateX}
                 color={primaryColor}
                 iconName="download-outline"
@@ -99,7 +99,7 @@ export function WorkoutLogVideoRow({
               />
             ) : null}
             <AnimatedSwipeButton
-              leftSnapPoint={leftSnapPoint}
+              snapPoint={leftSnapPoint}
               translateX={translateX}
               color="red"
               iconName="trash"
