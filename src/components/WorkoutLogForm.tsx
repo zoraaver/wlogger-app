@@ -19,6 +19,7 @@ import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
 import { getFileStats } from "../util/util";
 import NumericInput, { INumericInputProps } from "react-native-numeric-input";
 import { DeviceOrientation, useOrientation } from "../util/hooks";
+import { WeightUnitButtons } from "./WeightUnitButtons";
 
 export function WorkoutLogForm() {
   const [setInProgress, setSetInProgress] = React.useState(false);
@@ -57,14 +58,7 @@ export function WorkoutLogForm() {
       dispatch(addSet(formData));
 
       if (!videoRecording.cancelled) {
-        const { size, type } = await getFileStats(videoRecording.uri.slice(6));
-        const { uri } = videoRecording;
-        dispatch(
-          addFormVideo({
-            file: { uri, name: uri, size, type },
-          })
-        );
-        navigation.setParams({ cancelled: true });
+        await addLogVideo();
       }
 
       setFormData({ ...formData, restInterval: Date.now() });
@@ -76,6 +70,17 @@ export function WorkoutLogForm() {
       });
       setSetInProgress(!setInProgress);
     }
+  }
+
+  async function addLogVideo() {
+    const { size, type } = await getFileStats(videoRecording.uri.slice(6));
+    const { uri } = videoRecording;
+    dispatch(
+      addFormVideo({
+        file: { uri, name: uri, size, type },
+      })
+    );
+    navigation.setParams({ cancelled: true });
   }
 
   return (
@@ -137,30 +142,11 @@ export function WorkoutLogForm() {
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Unit: </Text>
-          <Button
-            onPress={() => setFormData({ ...formData, unit: "kg" })}
-            style={[
-              styles.unitButton,
-              styles.leftUnitButton,
-              {
-                borderWidth: formData.unit === "kg" ? 2 : 0,
-              },
-            ]}
-          >
-            <Text style={styles.buttonText}>kg</Text>
-          </Button>
-          <Button
-            onPress={() => setFormData({ ...formData, unit: "lb" })}
-            style={[
-              styles.unitButton,
-              styles.rightUnitButton,
-              {
-                borderWidth: formData.unit === "lb" ? 2 : 0,
-              },
-            ]}
-          >
-            <Text style={styles.buttonText}>lb</Text>
-          </Button>
+          <WeightUnitButtons
+            onUnitChange={(unit) => setFormData({ ...formData, unit })}
+            unit={formData.unit}
+            height={50}
+          />
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Video: </Text>
@@ -215,19 +201,6 @@ const styles = StyleSheet.create({
   },
   numericInput: {
     backgroundColor: "white",
-  },
-  unitButton: {
-    flex: 1,
-    height: 50,
-    borderColor: "lavender",
-  },
-  rightUnitButton: {
-    borderBottomLeftRadius: 0,
-    borderTopLeftRadius: 0,
-  },
-  leftUnitButton: {
-    borderBottomRightRadius: 0,
-    borderTopRightRadius: 0,
   },
 });
 
