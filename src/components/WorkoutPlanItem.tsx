@@ -107,6 +107,8 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "bold",
     fontFamily: Helvetica,
+    flex: 1,
+    paddingLeft: 20,
   },
   workoutPlanFieldText: {
     fontWeight: "bold",
@@ -114,5 +116,7 @@ const styles = StyleSheet.create({
   workoutPlanDetails: {
     height: "80%",
     justifyContent: "space-evenly",
+    flex: 1,
+    paddingLeft: 20,
   },
 });
