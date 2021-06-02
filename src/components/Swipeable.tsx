@@ -2,7 +2,6 @@ import * as React from "react";
 import { StyleSheet, View, ViewStyle } from "react-native";
 import Animated, {
   Easing,
-  Extrapolate,
   interpolate,
   runOnJS,
   useAnimatedGestureHandler,
@@ -19,12 +18,22 @@ import {
 } from "react-native-gesture-handler";
 import { findNearestSnapPoint, includes } from "../util/worklets";
 
+type HiddenAreaComponent = (
+  translateX: Animated.SharedValue<number>,
+  snapPoints: number[]
+) => JSX.Element;
+
+export enum SwipeDirection {
+  left,
+  right,
+  any,
+  none,
+}
+
 interface SwipeableProps {
   snapPoints: number[];
-  rightArea: (
-    translateX: Animated.SharedValue<number>,
-    snapPoints: number[]
-  ) => JSX.Element;
+  rightArea?: HiddenAreaComponent;
+  leftArea?: HiddenAreaComponent;
   children: React.ReactNode;
   onPress?: () => void;
   height?: number;
@@ -35,28 +44,53 @@ interface SwipeableProps {
 export function Swipeable({
   snapPoints,
   rightArea,
+  leftArea,
   children,
   onPress,
   height,
   mainAreaStyle,
   snapDuration = 250,
 }: SwipeableProps) {
+  let swipeDirection: SwipeDirection = SwipeDirection.none;
+
+  if (rightArea && leftArea) {
+    swipeDirection = SwipeDirection.any;
+  } else if (rightArea) {
+    swipeDirection = SwipeDirection.left;
+  } else if (leftArea) {
+    swipeDirection = SwipeDirection.right;
+  }
+
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
     snapPoints,
-    snapDuration
+    snapDuration,
+    swipeDirection
   );
-  const rightSnapPoint = snapPoints[0];
 
-  const animatedRightAreaStyle = useAnimatedStyle(() => ({
+  const rightSnapPoint = snapPoints[0];
+  const leftSnapPoint = snapPoints[snapPoints.length - 1];
+
+  const animatedRightAreaStyle = useAnimatedStyle(() => {
+    return {
+      width: interpolate(
+        translateX.value,
+        [rightSnapPoint, 0],
+        [-rightSnapPoint, 0]
+      ),
+      opacity:
+        translateX.value > 0
+          ? 0
+          : interpolate(translateX.value, [rightSnapPoint, 0], [1, 0.5]),
+    };
+  });
+
+  const animatedLeftAreaStyle = useAnimatedStyle(() => ({
     width: interpolate(
       translateX.value,
-      [rightSnapPoint, 0],
-      [-rightSnapPoint, 0],
-      {
-        extrapolateLeft: Extrapolate.EXTEND,
-      }
+      [0, leftSnapPoint],
+      [0, leftSnapPoint]
     ),
-    opacity: interpolate(translateX.value, [rightSnapPoint, 0], [1, 0.5]),
+    opacity: interpolate(translateX.value, [0, leftSnapPoint], [0.5, 1]),
   }));
 
   const animatedMainAreaStyle = useAnimatedStyle(() => ({
@@ -65,6 +99,13 @@ export function Swipeable({
 
   return (
     <View style={[swipeableStyles.wrapper, { height }]}>
+      {leftArea ? (
+        <Animated.View
+          style={[swipeableStyles.leftArea, animatedLeftAreaStyle]}
+        >
+          {leftArea(translateX, snapPoints)}
+        </Animated.View>
+      ) : null}
       <PanGestureHandler onGestureEvent={panGestureEventHandler} minDist={20}>
         <Animated.View
           style={[
@@ -83,16 +124,22 @@ export function Swipeable({
           </SwipeableTapHandler>
         </Animated.View>
       </PanGestureHandler>
-      <Animated.View
-        style={[swipeableStyles.rightArea, animatedRightAreaStyle]}
-      >
-        {rightArea(translateX, snapPoints)}
-      </Animated.View>
+      {rightArea ? (
+        <Animated.View
+          style={[swipeableStyles.rightArea, animatedRightAreaStyle]}
+        >
+          {rightArea(translateX, snapPoints)}
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
 
-function useHorizontalSwipeHandler(snapPoints: number[], duration: number) {
+function useHorizontalSwipeHandler(
+  snapPoints: number[],
+  duration: number,
+  allowedSwipeDirections: SwipeDirection
+) {
   const translateX = useSharedValue(0);
 
   const panGestureEventHandler = useAnimatedGestureHandler<
@@ -103,8 +150,19 @@ function useHorizontalSwipeHandler(snapPoints: number[], duration: number) {
       ctx.startX = translateX.value;
     },
     onActive: ({ translationX }, ctx) => {
-      if (ctx.startX + translationX <= 0) {
-        translateX.value = ctx.startX + translationX;
+      const totalTranslationX = ctx.startX + translationX;
+      switch (allowedSwipeDirections) {
+        case SwipeDirection.any:
+          translateX.value = totalTranslationX;
+          break;
+        case SwipeDirection.left:
+          if (totalTranslationX <= 0) translateX.value = totalTranslationX;
+          break;
+        case SwipeDirection.right:
+          if (totalTranslationX >= 0) translateX.value = totalTranslationX;
+          break;
+        case SwipeDirection.none:
+          break;
       }
     },
     onEnd: ({ translationX, velocityX }) => {
@@ -188,15 +246,24 @@ const swipeableStyles = StyleSheet.create({
   wrapper: {
     flex: 1,
     flexDirection: "row",
-    justifyContent: "flex-end",
     backgroundColor: "lightgrey",
   },
   mainArea: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: "white",
     flex: 1,
   },
-  rightArea: {
+  leftArea: {
+    position: "absolute",
+    left: 0,
     flexDirection: "row",
+    height: "100%",
+    flex: 1,
+  },
+  rightArea: {
+    position: "absolute",
+    right: 0,
+    flexDirection: "row",
+    flex: 1,
+    height: "100%",
   },
 });
