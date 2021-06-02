@@ -91,3 +91,19 @@ const extensionToMime: { [extension: string]: string } = {
   mp4: "video/mp4",
   mov: "video/quicktime",
 };
+
+export function DDMMYYYYDateFormat(date: Date | string | undefined): string {
+  if (date === undefined) return "-";
+  let dateToFormat: Date;
+  if (typeof date === "string") {
+    dateToFormat = new Date(date);
+  } else {
+    dateToFormat = date;
+  }
+  const years = dateToFormat.getFullYear();
+  let month: string | number = dateToFormat.getMonth() + 1;
+  let days: string | number = dateToFormat.getDate();
+  if (month < 10) month = "0" + month;
+  if (days < 10) days = "0" + days;
+  return `${days}/${month}/${years}`;
+}
