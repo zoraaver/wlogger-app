@@ -1,13 +1,20 @@
 import * as React from "react";
 import { View, Text, StyleSheet, LayoutAnimation } from "react-native";
 import { useAppDispatch } from "..";
-import { deleteWeek, weekData } from "../slices/workoutPlansSlice";
-import { Helvetica } from "../util/constants";
+import {
+  changeWeekRepeat,
+  deleteWeek,
+  findRemainingWeekDays,
+  weekData,
+} from "../slices/workoutPlansSlice";
+import { Helvetica, infoColor, primaryColor } from "../util/constants";
 import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
 import { Button } from "./Button";
 import { Swipeable } from "./Swipeable";
 import { WorkoutItem } from "./WorkoutItem";
 import Ionicon from "react-native-vector-icons/Ionicons";
+import { setNewWorkoutModalData } from "../slices/UISlice";
+import Animated from "react-native-reanimated";
 
 interface WeekItemProps {
   week: weekData;
@@ -15,7 +22,8 @@ interface WeekItemProps {
   setExpanded: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const snapPoints = [-100, 0];
+const rightSnapPoint = 140;
+const snapPoints = [-100, 0, rightSnapPoint];
 
 function weekHeader(week: weekData) {
   if (week.repeat) {
@@ -63,12 +71,19 @@ export function WeekItem({ week, expanded, setExpanded }: WeekItemProps) {
         onPress={toggleExpand}
         rightArea={(translateX) => (
           <AnimatedSwipeButton
-            leftSnapPoint={snapPoints[0]}
+            snapPoint={snapPoints[0]}
             translateX={translateX}
             color="red"
             text="Delete"
             onPress={handleDelete}
             iconName="trash"
+          />
+        )}
+        leftArea={(translateX) => (
+          <WeekItemLeftButtons
+            translateX={translateX}
+            weekPosition={week.position}
+            weekRepeat={week.repeat}
           />
         )}
       >
@@ -80,23 +95,104 @@ export function WeekItem({ week, expanded, setExpanded }: WeekItemProps) {
         </Text>
       </Swipeable>
       {expanded ? (
-        <View style={{ flex: 1 }}>
-          {week.workouts.length !== 7 ? (
-            <Button onPress={() => {}} color="lightgreen" style={styles.button}>
-              <Ionicon name="add" size={18} />
-              <Text style={styles.buttonText}>workout</Text>
-            </Button>
-          ) : null}
-          {week.workouts.map((workout) => (
-            <WorkoutItem
-              workout={workout}
-              weekPosition={week.position}
-              weekTitle={weekTitle}
-              key={workout.dayOfWeek}
-            />
-          ))}
-        </View>
+        <WeekItemCollapsibleArea week={week} weekTitle={weekTitle} />
       ) : null}
+    </>
+  );
+}
+
+interface WeekItemCollapsibleAreaProps {
+  week: weekData;
+  weekTitle: string;
+}
+
+function WeekItemCollapsibleArea({
+  week,
+  weekTitle,
+}: WeekItemCollapsibleAreaProps) {
+  const dispatch = useAppDispatch();
+
+  return (
+    <View style={{ flex: 1 }}>
+      {week.workouts.length !== 7 ? (
+        <Button
+          onPress={() => {
+            dispatch(
+              setNewWorkoutModalData({
+                remainingDays: findRemainingWeekDays(week),
+                weekPosition: week.position,
+                weekTitle,
+              })
+            );
+          }}
+          color="lightgreen"
+          style={styles.button}
+        >
+          <Ionicon name="add" size={18} />
+          <Text style={styles.buttonText}>workout</Text>
+        </Button>
+      ) : null}
+      {week.workouts.map((workout) => (
+        <WorkoutItem
+          workout={workout}
+          weekPosition={week.position}
+          weekTitle={weekTitle}
+          key={workout.dayOfWeek}
+        />
+      ))}
+    </View>
+  );
+}
+
+interface WeekItemLeftButtonsProps {
+  translateX: Animated.SharedValue<number>;
+  weekPosition: weekData["position"];
+  weekRepeat: weekData["repeat"];
+}
+
+function WeekItemLeftButtons({
+  translateX,
+  weekPosition,
+  weekRepeat,
+}: WeekItemLeftButtonsProps) {
+  const dispatch = useAppDispatch();
+
+  const operationValues = {
+    increase: 1,
+    decrease: -1,
+  };
+
+  function handleRepeatChange(op: keyof typeof operationValues): void {
+    dispatch(
+      changeWeekRepeat({
+        weekPosition,
+        newRepeat: weekRepeat + operationValues[op],
+      })
+    );
+  }
+
+  return (
+    <>
+      <AnimatedSwipeButton
+        snapPoint={rightSnapPoint}
+        translateX={translateX}
+        color={primaryColor}
+        iconName="add"
+        text="repeat"
+        onPress={() => {
+          handleRepeatChange("increase");
+        }}
+      />
+      <AnimatedSwipeButton
+        snapPoint={rightSnapPoint}
+        translateX={translateX}
+        color={infoColor}
+        iconName="remove"
+        text="repeat"
+        onPress={() => {
+          handleRepeatChange("decrease");
+        }}
+      />
     </>
   );
 }
