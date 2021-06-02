@@ -1,4 +1,4 @@
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/core";
+import { RouteProp, useRoute } from "@react-navigation/core";
 import * as React from "react";
 import {
   LayoutAnimation,
@@ -7,13 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { useAppDispatch, useAppSelector } from "..";
+import { useAppSelector } from "..";
 import { ExerciseTable } from "../containers/ExerciseTable";
-import {
-  WorkoutPlanNavigation,
-  WorkoutPlanStackParamList,
-} from "../navigators/WorkoutPlanStackNavigator";
-import { deleteWorkout } from "../slices/workoutPlansSlice";
+import { WorkoutPlanStackParamList } from "../navigators/WorkoutPlanStackNavigator";
 import { workoutData } from "../slices/workoutsSlice";
 import { Helvetica, primaryColor } from "../util/constants";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
@@ -28,47 +24,37 @@ export function WorkoutScreen() {
   const [edit, setEdit] = React.useState(false);
   const [selectedExerciseIndex, setSelectedExerciseIndex] = React.useState(-1);
 
-  const workout: workoutData | undefined = useAppSelector((state) =>
-    state.workoutPlans.editWorkoutPlan?.weeks
-      .find((week) => week.position === weekPosition)
-      ?.workouts.find((workout) => workout.dayOfWeek === dayOfWeek)
+  const workoutPlan = useAppSelector(
+    (state) => state.workoutPlans.editWorkoutPlan
   );
-
-  const dispatch = useAppDispatch();
-  const navigation = useNavigation<WorkoutPlanNavigation>();
-  React.useEffect(() => {
-    if (!workout) {
-      setTimeout(() => navigation.goBack(), 300);
-    }
-  }, [workout]);
-
-  function handleDelete() {
-    LayoutAnimation.configureNext({
-      ...LayoutAnimation.Presets.easeInEaseOut,
-      duration: 300,
-    });
-    dispatch(deleteWorkout({ position: weekPosition, day: dayOfWeek }));
-  }
+  const workout: workoutData | undefined = workoutPlan?.weeks
+    .find((week) => week.position === weekPosition)
+    ?.workouts.find((workout) => workout.dayOfWeek === dayOfWeek);
 
   function handleEdit() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setEdit(!edit);
+    resetExerciseSelection();
+  }
+
+  function resetExerciseSelection() {
     setSelectedExerciseIndex(-1);
   }
 
   function rowEditButton(exerciseIndex: number) {
+    const selected = selectedExerciseIndex === exerciseIndex;
     return (
       <Button
         onPress={() => {
           if (exerciseIndex !== selectedExerciseIndex) {
             setSelectedExerciseIndex(exerciseIndex);
           } else {
-            setSelectedExerciseIndex(-1);
+            resetExerciseSelection();
           }
         }}
-        style={{ height: "100%", width: "100%", borderRadius: 0 }}
+        style={styles.tableButton}
       >
-        {selectedExerciseIndex === exerciseIndex ? (
+        {selected ? (
           <Ionicon name="ellipsis-horizontal" color="white" size={25} />
         ) : (
           <MaterialIcon name="edit" color="white" size={25} />
@@ -91,21 +77,12 @@ export function WorkoutScreen() {
             selectedExerciseIndex={selectedExerciseIndex}
             dayOfWeek={dayOfWeek}
             weekPosition={weekPosition}
+            resetExerciseSelection={resetExerciseSelection}
           />
         ) : null}
         <View style={styles.editArea}>
           <Button onPress={handleEdit} color={primaryColor}>
             <Text style={styles.buttonText}>{edit ? "Done" : "Edit"}</Text>
-          </Button>
-          <Button
-            style={[styles.iconButton, { marginTop: 10 }]}
-            onPress={handleDelete}
-            color="red"
-          >
-            <Ionicon name="trash" color="white" size={23} />
-            <Text style={[styles.buttonText, { paddingLeft: 10 }]}>
-              Delete workout
-            </Text>
           </Button>
         </View>
       </ScrollView>
@@ -129,4 +106,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
   },
+  tableButton: { height: "100%", width: "100%", borderRadius: 0 },
 });
