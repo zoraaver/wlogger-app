@@ -84,14 +84,16 @@ const styles = StyleSheet.create({
   newWorkoutModal: {
     maxHeight: "50%",
     backgroundColor: "lightgrey",
+    borderColor: "lightgrey",
     borderRadius: 10,
-    borderWidth: 0.2,
+    borderWidth: 0.5,
   },
   dayButton: {
     width: "100%",
     alignItems: "center",
     borderRadius: 0,
     borderTopWidth: 0.6,
+    borderTopColor: "lightgrey",
     height: 50,
   },
   headerText: {
@@ -116,6 +118,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
     width: "100%",
     borderTopWidth: 0.6,
+    borderTopColor: "lightgrey",
     height: 50,
   },
   dayText: { fontFamily: Helvetica, fontSize: 18 },
