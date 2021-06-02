@@ -34,12 +34,14 @@ const initialExerciseData: exerciseData = {
 
 interface ExerciseFormProps {
   selectedExerciseIndex: number;
+  resetExerciseSelection: () => void;
   dayOfWeek: Day;
   weekPosition: number;
 }
 
 export function ExerciseForm({
   selectedExerciseIndex,
+  resetExerciseSelection,
   dayOfWeek,
   weekPosition,
 }: ExerciseFormProps) {
@@ -51,9 +53,7 @@ export function ExerciseForm({
         ?.exercises[selectedExerciseIndex]
   );
 
-  const [formData, setFormData] = React.useState<exerciseData>(
-    selectedExercise ? { ...selectedExercise } : initialExerciseData
-  );
+  const [formData, setFormData] = React.useState(initialExerciseData);
   const { width } = useWindowDimensions();
   const orientation: DeviceOrientation = useOrientation();
   const numericInputWidth = width * 0.7;
@@ -69,34 +69,45 @@ export function ExerciseForm({
     }
   }, [selectedExercise]);
 
+  const isNewExercise = !(formData._id || formData.addedInCurrentSession);
+
   function handleSubmit() {
     if (!formData.name) {
       setExerciseNameError("Exercise name is required");
     } else {
-      if (formData._id) {
-        setExerciseNameError("");
-        dispatch(
-          updateExercise({
-            updatedExercise: formData,
-            day: dayOfWeek,
-            exerciseIndex: selectedExerciseIndex,
-            weekPosition,
-          })
-        );
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      if (!isNewExercise) {
+        handleUpdateExercise();
       } else {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        dispatch(
-          addExercise({
-            position: weekPosition,
-            day: dayOfWeek,
-            exerciseData: formData,
-          })
-        );
+        handleAddExercise();
       }
     }
   }
 
-  function handleDelete() {
+  function handleUpdateExercise() {
+    setExerciseNameError("");
+    dispatch(
+      updateExercise({
+        updatedExercise: formData,
+        day: dayOfWeek,
+        exerciseIndex: selectedExerciseIndex,
+        weekPosition,
+      })
+    );
+  }
+
+  function handleAddExercise() {
+    dispatch(
+      addExercise({
+        weekPosition,
+        day: dayOfWeek,
+        exerciseData: formData,
+      })
+    );
+    setFormData(initialExerciseData);
+  }
+
+  function handleDeleteExercise() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     dispatch(
       deleteExercise({
@@ -105,9 +116,8 @@ export function ExerciseForm({
         exerciseIndex: selectedExerciseIndex,
       })
     );
+    resetExerciseSelection();
   }
-
-  const isNewExercise = !(formData._id || formData.addedInCurrentSession);
 
   return (
     <View style={styles.exerciseForm}>
@@ -156,7 +166,6 @@ export function ExerciseForm({
           onChange={(repetitions) => setFormData({ ...formData, repetitions })}
           value={formData.repetitions}
           valueType="integer"
-          minValue={0}
           initValue={formData.repetitions}
         />
       </View>
@@ -169,7 +178,6 @@ export function ExerciseForm({
           value={formData.weight}
           valueType="real"
           step={1.25}
-          minValue={0}
           initValue={formData.weight}
         />
       </View>
@@ -195,7 +203,11 @@ export function ExerciseForm({
         </Text>
       </Button>
       {isNewExercise ? null : (
-        <Button onPress={handleDelete} style={styles.iconButton} color="red">
+        <Button
+          onPress={handleDeleteExercise}
+          style={styles.iconButton}
+          color="red"
+        >
           <Ionicon name="trash" color="white" size={23} />
           <Text style={styles.buttonText}>Delete exercise</Text>
         </Button>
