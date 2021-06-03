@@ -1,5 +1,5 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { NavigationContainer } from "@react-navigation/native";
+import { LinkingOptions, NavigationContainer } from "@react-navigation/native";
 import { configureStore } from "@reduxjs/toolkit";
 import * as React from "react";
 import { UIManager } from "react-native";
@@ -47,11 +47,20 @@ if (UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const linking: LinkingOptions = {
+  prefixes: ["https://wlogger.uk"],
+  config: {
+    screens: {
+      verify: "/verify/:verificationToken",
+    },
+  },
+};
+
 export function Application() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <NavigationContainer>
+        <NavigationContainer linking={linking}>
           <App />
         </NavigationContainer>
       </SafeAreaProvider>
