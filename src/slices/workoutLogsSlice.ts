@@ -31,6 +31,7 @@ interface workoutLogState {
   editWorkoutLog: workoutLogData;
   formVideoError?: string;
   videoUploadProgress: { [fileName: string]: number };
+  dataPending?: boolean;
 }
 
 export interface workoutLogHeaderData {
@@ -446,32 +447,48 @@ const slice = createSlice({
         state.success = `Successfully logged workout on ${dateLogged.toLocaleString()}`;
       }
     );
+
     builder.addCase(postWorkoutLog.rejected, (state, action) => {
       state.editWorkoutLog = { exercises: [] };
       console.error(action.error.message);
     });
+
     builder.addCase(postFormVideos.rejected, (state, action) => {
       state.videoUploadProgress = {};
       console.error(action.error.message);
     });
+
     builder.addCase(postFormVideos.fulfilled, (state, action) => {
       state.videoUploadProgress = {};
     });
+
     builder.addCase(
       getWorkoutLogs.fulfilled,
       (state, action: PayloadAction<workoutLogHeaderData[]>) => {
         state.data = action.payload;
+        state.dataPending = false;
       }
     );
+
+    builder.addCase(getWorkoutLogs.pending, (state) => {
+      state.dataPending = true;
+    });
+
+    builder.addCase(getWorkoutLogs.rejected, (state) => {
+      state.dataPending = false;
+    });
+
     builder.addCase(
       getWorkoutLog.fulfilled,
       (state, action: PayloadAction<workoutLogData>) => {
         state.editWorkoutLog = action.payload;
       }
     );
+
     builder.addCase(getWorkoutLog.rejected, (state, action) => {
       console.error(action.error.message);
     });
+
     builder.addCase(
       deleteWorkoutLog.fulfilled,
       (state, action: PayloadAction<string>) => {
@@ -482,10 +499,12 @@ const slice = createSlice({
         state.success = `Successfully deleted log`;
       }
     );
+
     builder.addCase(deleteWorkoutLog.rejected, (state, action) => {
       state.error = "Deleting workout failed";
       state.success = undefined;
     });
+
     builder.addCase(
       deleteSetVideo.fulfilled,
       (state, action: PayloadAction<{ exerciseId: string; setId: string }>) => {
@@ -498,6 +517,7 @@ const slice = createSlice({
         }
       }
     );
+
     builder.addCase(deleteSetVideo.rejected, (state, action) => {
       console.error(action.error.message);
     });
