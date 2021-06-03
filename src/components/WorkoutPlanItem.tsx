@@ -46,7 +46,12 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
         )}
         snapPoints={snapPoints}
         height={120}
-        onPress={() => navigation.navigate("show", workoutPlan)}
+        onPress={() =>
+          navigation.navigate("show", {
+            workoutPlanName: workoutPlan.name,
+            id: workoutPlan._id,
+          })
+        }
         mainAreaStyle={styles.workoutPlanItem}
       >
         <WorkoutPlanDetails workoutPlan={workoutPlan} />

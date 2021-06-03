@@ -6,12 +6,12 @@ import * as React from "react";
 import { WorkoutPlanScreen } from "../screens/WorkoutPlanScreen";
 import { WorkoutPlansScreen } from "../screens/WorkoutPlansScreen";
 import { WorkoutScreen } from "../screens/WorkoutScreen";
-import { Day, workoutPlanHeaderData } from "../slices/workoutPlansSlice";
+import { Day, workoutPlanData } from "../slices/workoutPlansSlice";
 import { headerStyles } from "./WorkoutLogStackNavigator";
 
 export type WorkoutPlanStackParamList = {
   index: undefined;
-  show: workoutPlanHeaderData;
+  show: { workoutPlanName: string; id?: workoutPlanData["_id"] };
   showWorkout: {
     dayOfWeek: Day;
     weekPosition: number;
@@ -41,7 +41,7 @@ export function WorkoutPlanStackNavigator() {
       <Stack.Screen
         name="show"
         component={WorkoutPlanScreen}
-        options={({ route }) => ({ title: route.params.name })}
+        options={({ route }) => ({ title: route.params.workoutPlanName })}
       />
       <Stack.Screen
         name="showWorkout"
