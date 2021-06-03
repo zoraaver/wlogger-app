@@ -64,6 +64,7 @@ interface workoutPlanState {
   currentPlan?: workoutPlanHeaderData;
   success: string | undefined;
   planUpdateInProgress?: boolean;
+  dataPending?: boolean;
 }
 
 export const postWorkoutPlan = createAsyncThunk(
@@ -209,8 +210,19 @@ const slice = createSlice({
   name: "workoutPlans",
   initialState,
   reducers: {
-    setInitialWorkoutPlanData(state, action: PayloadAction<workoutPlanData>) {
-      state.editWorkoutPlan = action.payload;
+    setInitialWorkoutPlanData(
+      state,
+      action: PayloadAction<workoutPlanData | string>
+    ) {
+      if (typeof action.payload === "string") {
+        state.editWorkoutPlan = {
+          name: action.payload,
+          status: "Not started",
+          weeks: [],
+        };
+      } else {
+        state.editWorkoutPlan = action.payload;
+      }
       state.editWorkoutPlan.length = 0;
     },
     addWeek(state, action: PayloadAction<weekData | undefined>) {
@@ -380,17 +392,30 @@ const slice = createSlice({
       (state, action: PayloadAction<workoutPlanData>) => {
         state.success = `${action.payload.name} successfully created`;
         state.editWorkoutPlan = action.payload;
+        state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
       }
     );
+
     builder.addCase(postWorkoutPlan.rejected, (state, action) => {
       state.success = undefined;
     });
+
     builder.addCase(getWorkoutPlans.fulfilled, (state, action) => {
       state.data = action.payload;
       state.data.forEach((plan: workoutPlanHeaderData) => {
         plan.length = calculateLength(plan);
       });
+      state.dataPending = false;
     });
+
+    builder.addCase(getWorkoutPlans.pending, (state) => {
+      state.dataPending = true;
+    });
+
+    builder.addCase(getWorkoutPlans.rejected, (state) => {
+      state.dataPending = false;
+    });
+
     builder.addCase(
       getWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData>) => {
@@ -424,12 +449,9 @@ const slice = createSlice({
         state.planUpdateInProgress = false;
       }
     );
-    builder.addCase(
-      patchWorkoutPlan.pending,
-      (state, action: PayloadAction<unknown>) => {
-        state.planUpdateInProgress = true;
-      }
-    );
+    builder.addCase(patchWorkoutPlan.pending, (state) => {
+      state.planUpdateInProgress = true;
+    });
     builder.addCase(
       deleteWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData["_id"]>) => {
