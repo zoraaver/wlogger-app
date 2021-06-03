@@ -9,7 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { HorizontalDivider } from "../components/HorizontalDivider";
@@ -22,6 +21,7 @@ import {
   patchStartWorkoutPlan,
   patchWorkoutPlan,
   postWorkoutPlan,
+  weekData,
   workoutPlanData,
 } from "../slices/workoutPlansSlice";
 import { Helvetica, successColor } from "../util/constants";
@@ -44,34 +44,15 @@ export function WorkoutPlanScreen() {
     }
   }, [id]);
 
-  const [expandedWeek, setExpandedWeek] = React.useState(-1);
-
-  const weekItemListRef = React.useRef<FlatList>(null);
-
   const { newWorkoutModalData } = useAppSelector((state) => state.UI);
   const newWorkoutModalVisible = newWorkoutModalData !== undefined;
 
-  const planUpdateInProgress = useAppSelector(
-    (state) => state.workoutPlans.planUpdateInProgress
-  );
+  const weekItemListRef = React.useRef<FlatList>(null);
 
   function handleAddWeek() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     dispatch(addWeek());
     weekItemListRef.current?.scrollToEnd();
-  }
-
-  function handleSave() {
-    if (workoutPlan?._id) {
-      dispatch(patchWorkoutPlan(workoutPlan));
-    } else if (workoutPlan) {
-      dispatch(postWorkoutPlan(workoutPlan));
-    }
-  }
-  function handleStart() {
-    if (workoutPlan?._id) {
-      dispatch(patchStartWorkoutPlan(workoutPlan._id));
-    }
   }
 
   return (
@@ -82,8 +63,7 @@ export function WorkoutPlanScreen() {
         weekPosition={newWorkoutModalData?.weekPosition}
         weekTitle={newWorkoutModalData?.weekTitle}
       />
-      <SafeAreaView
-        edges={["bottom", "left", "right"]}
+      <View
         style={[
           styles.workoutPlanScreen,
           {
@@ -94,57 +74,50 @@ export function WorkoutPlanScreen() {
         {workoutPlan ? (
           <>
             <WorkoutPlanDetails workoutPlan={workoutPlan} />
-            <FlatList
-              style={{
-                flex: 1,
-                backgroundColor: "aliceblue",
-                marginBottom: 10,
-              }}
-              data={workoutPlan.weeks}
-              renderItem={({ item: week }) => (
-                <WeekItem
-                  week={week}
-                  expanded={expandedWeek === week.position}
-                  setExpanded={setExpandedWeek}
-                />
-              )}
-              keyExtractor={(week) => week.position.toString()}
-              ItemSeparatorComponent={() => <HorizontalDivider />}
-              extraData={expandedWeek}
-              ListFooterComponent={() =>
-                workoutPlan.weeks.length ? <HorizontalDivider /> : null
-              }
-              ref={weekItemListRef}
+            <WeekItemList
+              weeks={workoutPlan.weeks}
+              weekItemListRef={weekItemListRef}
             />
           </>
         ) : (
           <ActivityIndicator size="large" color="black" />
         )}
-        <View style={styles.controls}>
-          <Button
-            onPress={handleAddWeek}
-            color={successColor}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>Add week</Text>
-          </Button>
-          {workoutPlan?.status === "In progress" || !workoutPlan?._id ? null : (
-            <Button onPress={handleStart} style={styles.button}>
-              <Text style={styles.buttonText}>Start Plan</Text>
-            </Button>
-          )}
-          <Button onPress={handleSave} style={styles.button}>
-            {planUpdateInProgress ? (
-              <ActivityIndicator size="small" color="aliceblue" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {workoutPlan?._id ? "Save changes" : "Create"}
-              </Text>
-            )}
-          </Button>
-        </View>
-      </SafeAreaView>
+        <WorkoutPlanControls
+          workoutPlan={workoutPlan}
+          handleAddWeek={handleAddWeek}
+        />
+      </View>
     </>
+  );
+}
+
+interface WeekItemListProps {
+  weeks: weekData[];
+  weekItemListRef: React.RefObject<FlatList<any>>;
+}
+
+function WeekItemList({ weeks, weekItemListRef }: WeekItemListProps) {
+  const [expandedWeek, setExpandedWeek] = React.useState(-1);
+  return (
+    <FlatList
+      style={{
+        flex: 1,
+        backgroundColor: "powderblue",
+      }}
+      data={weeks}
+      renderItem={({ item: week }) => (
+        <WeekItem
+          week={week}
+          expanded={expandedWeek === week.position}
+          setExpanded={setExpandedWeek}
+        />
+      )}
+      keyExtractor={(week) => week.position.toString()}
+      ItemSeparatorComponent={() => <HorizontalDivider />}
+      extraData={expandedWeek}
+      ListFooterComponent={() => (weeks.length ? <HorizontalDivider /> : null)}
+      ref={weekItemListRef}
+    />
   );
 }
 
@@ -181,10 +154,68 @@ function WorkoutPlanDetails({ workoutPlan }: WorkoutPlanDetailsProps) {
   );
 }
 
+interface WorkoutPlanControlsProps {
+  workoutPlan?: workoutPlanData;
+  handleAddWeek: () => void;
+}
+
+function WorkoutPlanControls({
+  workoutPlan,
+  handleAddWeek,
+}: WorkoutPlanControlsProps) {
+  const planUpdateInProgress = useAppSelector(
+    (state) => state.workoutPlans.planUpdateInProgress
+  );
+  const dispatch = useAppDispatch();
+
+  function handleSave() {
+    if (workoutPlan?._id) {
+      dispatch(patchWorkoutPlan(workoutPlan));
+    } else if (workoutPlan) {
+      dispatch(postWorkoutPlan(workoutPlan));
+    }
+  }
+  function handleStart() {
+    if (workoutPlan?._id) {
+      dispatch(patchStartWorkoutPlan(workoutPlan._id));
+    }
+  }
+
+  return (
+    <View style={styles.controls}>
+      <Button
+        onPress={handleAddWeek}
+        color={successColor}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Add week</Text>
+      </Button>
+      {workoutPlan?.status === "In progress" || !workoutPlan?._id ? null : (
+        <Button onPress={handleStart} style={styles.button}>
+          <Text style={styles.buttonText}>Start Plan</Text>
+        </Button>
+      )}
+      <Button onPress={handleSave} style={styles.button}>
+        {planUpdateInProgress ? (
+          <ActivityIndicator size="small" color="aliceblue" />
+        ) : (
+          <Text style={styles.buttonText}>
+            {workoutPlan?._id ? "Save changes" : "Create"}
+          </Text>
+        )}
+      </Button>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   workoutPlanScreen: { flex: 1, backgroundColor: "powderblue" },
   buttonText: { fontFamily: Helvetica, color: "white", fontSize: 18 },
-  controls: { justifyContent: "space-evenly", paddingHorizontal: 20 },
+  controls: {
+    justifyContent: "space-evenly",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
   button: { marginBottom: 10 },
   planDetails: {
     backgroundColor: "lightyellow",
