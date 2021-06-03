@@ -153,6 +153,9 @@ const slice = createSlice({
     setSignupSuccess(state, action: PayloadAction<string | undefined>) {
       state.signupSuccess = action.payload;
     },
+    setSignupError(state, action: PayloadAction<signupError | undefined>) {
+      state.signupError = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(loginUser.rejected, (state, action) => {
@@ -249,4 +252,4 @@ const slice = createSlice({
 });
 
 export const userReducer = slice.reducer;
-export const { setSignupSuccess } = slice.actions;
+export const { setSignupSuccess, setSignupError } = slice.actions;
