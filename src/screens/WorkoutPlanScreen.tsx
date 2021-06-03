@@ -21,6 +21,7 @@ import {
   getWorkoutPlan,
   patchStartWorkoutPlan,
   patchWorkoutPlan,
+  postWorkoutPlan,
   workoutPlanData,
 } from "../slices/workoutPlansSlice";
 import { Helvetica, successColor } from "../util/constants";
@@ -31,15 +32,17 @@ type WorkoutPlanScreenRouteProp = RouteProp<WorkoutPlanStackParamList, "show">;
 export function WorkoutPlanScreen() {
   const dispatch = useAppDispatch();
   const {
-    params: { _id },
+    params: { id },
   } = useRoute<WorkoutPlanScreenRouteProp>();
   const workoutPlan = useAppSelector(
     (state) => state.workoutPlans.editWorkoutPlan
   );
 
   React.useEffect(() => {
-    dispatch(getWorkoutPlan(_id));
-  }, [_id]);
+    if (id) {
+      dispatch(getWorkoutPlan(id));
+    }
+  }, [id]);
 
   const [expandedWeek, setExpandedWeek] = React.useState(-1);
 
@@ -59,8 +62,10 @@ export function WorkoutPlanScreen() {
   }
 
   function handleSave() {
-    if (workoutPlan) {
+    if (workoutPlan?._id) {
       dispatch(patchWorkoutPlan(workoutPlan));
+    } else if (workoutPlan) {
+      dispatch(postWorkoutPlan(workoutPlan));
     }
   }
   function handleStart() {
@@ -123,7 +128,7 @@ export function WorkoutPlanScreen() {
           >
             <Text style={styles.buttonText}>Add week</Text>
           </Button>
-          {workoutPlan?.status === "In progress" ? null : (
+          {workoutPlan?.status === "In progress" || !workoutPlan?._id ? null : (
             <Button onPress={handleStart} style={styles.button}>
               <Text style={styles.buttonText}>Start Plan</Text>
             </Button>
@@ -132,7 +137,9 @@ export function WorkoutPlanScreen() {
             {planUpdateInProgress ? (
               <ActivityIndicator size="small" color="aliceblue" />
             ) : (
-              <Text style={styles.buttonText}>Save changes</Text>
+              <Text style={styles.buttonText}>
+                {workoutPlan?._id ? "Save changes" : "Create"}
+              </Text>
             )}
           </Button>
         </View>
@@ -184,7 +191,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     paddingVertical: 10,
-    borderBottomWidth: 0.3,
+    borderBottomWidth: 0.6,
+    borderBottomColor: "lightgrey",
   },
   planDetailsText: {
     fontFamily: Helvetica,
