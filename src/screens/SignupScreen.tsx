@@ -1,57 +1,57 @@
 import * as React from "react";
-import {
-  View,
-  Text,
-  Modal,
-  StyleSheet,
-  TextInput,
-  Button as NativeButton,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
-import { setSignupSuccess, signupUser } from "../slices/usersSlice";
+import {
+  setSignupError,
+  setSignupSuccess,
+  signupUser,
+} from "../slices/usersSlice";
 import { Helvetica, successColor } from "../util/constants";
-import { Button } from "./Button";
+import { Button } from "../components/Button";
+import { useNavigation } from "@react-navigation/core";
+import { UnauthenticatedNavigation } from "../navigators/UnauthenticatedStackNavigator";
+import { DismissKeyboard } from "../components/DismissKeyboard";
 
-interface SignupModalProps {
-  showSignupModal: boolean;
-  setShowSignupModal: (showSignupModal: boolean) => void;
-}
-export function SignupModal({
-  showSignupModal,
-  setShowSignupModal,
-}: SignupModalProps) {
-  const [formData, setFormData] = React.useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const passwordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
-    null
-  );
-  const confirmPasswordInputRef: React.RefObject<TextInput> = React.useRef<TextInput>(
-    null
-  );
+const initialFormData = { email: "", password: "", confirmPassword: "" };
+
+export function SignupScreen() {
+  const [formData, setFormData] = React.useState(initialFormData);
+
+  const passwordInputRef = React.useRef<TextInput>(null);
+  const confirmPasswordInputRef = React.useRef<TextInput>(null);
+
   const dispatch = useAppDispatch();
+
   const signupError = useAppSelector((state) => state.user.signupError);
   const signupSuccess = useAppSelector((state) => state.user.signupSuccess);
 
-  function handleSubmit() {
-    dispatch(signupUser(formData));
-  }
+  const navigation = useNavigation<UnauthenticatedNavigation>();
 
-  const signupAlert = () =>
+  React.useEffect(() => {
+    return () => {
+      dispatch(setSignupError());
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (signupSuccess) {
+      signupAlert();
+    }
+  }, [signupSuccess]);
+
+  function signupAlert() {
     Alert.alert("Account created", signupSuccess, [
       {
         text: "Ok",
         onPress: () => {
           dispatch(setSignupSuccess(undefined));
-          setShowSignupModal(false);
+          navigation.navigate("login");
           setFormData({ email: "", password: "", confirmPassword: "" });
         },
       },
     ]);
+  }
 
   function errorBorder(fieldName: string) {
     return fieldName === signupError?.field
@@ -60,23 +60,9 @@ export function SignupModal({
   }
 
   return (
-    <Modal
-      animationType="slide"
-      visible={showSignupModal}
-      onRequestClose={() => {
-        setShowSignupModal(false);
-      }}
-      style={{ flex: 1 }}
-    >
-      {signupSuccess && signupAlert()}
+    <DismissKeyboard>
       <SafeAreaView style={styles.signupModal}>
         <View style={styles.signupForm}>
-          <View style={styles.backButton}>
-            <NativeButton
-              onPress={() => setShowSignupModal(false)}
-              title="Back"
-            />
-          </View>
           <TextInput
             style={{ ...styles.signupInput, ...errorBorder("email") }}
             placeholder="email"
@@ -138,12 +124,17 @@ export function SignupModal({
               <Text>{signupError?.error}</Text>
             </View>
           )}
-          <Button onPress={handleSubmit} color={successColor}>
+          <Button
+            onPress={() => {
+              dispatch(signupUser(formData));
+            }}
+            color={successColor}
+          >
             <Text style={styles.signupButtonText}>Sign up</Text>
           </Button>
         </View>
       </SafeAreaView>
-    </Modal>
+    </DismissKeyboard>
   );
 }
 

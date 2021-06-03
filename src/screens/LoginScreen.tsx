@@ -13,7 +13,6 @@ import { Button } from "../components/Button";
 import { DismissKeyboard } from "../components/DismissKeyboard";
 import { HorizontalDivider } from "../components/HorizontalDivider";
 import LoginForm from "../components/LoginForm";
-import { SignupModal } from "../components/SignupModal";
 import {
   BalsamiqSans,
   Helvetica,
@@ -21,9 +20,11 @@ import {
   successColor,
 } from "../util/constants";
 import { useKeyboard } from "../util/hooks";
+import { useNavigation } from "@react-navigation/core";
+import { UnauthenticatedNavigation } from "../navigators/UnauthenticatedStackNavigator";
 
 export default function LoginScreen() {
-  const [showSignupModal, setShowSignupModal] = React.useState(false);
+  const navigation = useNavigation<UnauthenticatedNavigation>();
   const windowHeight = useWindowDimensions().height;
   const logoAreaMaxHeight = React.useRef(new Animated.Value(windowHeight))
     .current;
@@ -58,10 +59,6 @@ export default function LoginScreen() {
         style={styles.loginScreen}
         edges={["bottom", "right", "left"]}
       >
-        <SignupModal
-          showSignupModal={showSignupModal}
-          setShowSignupModal={setShowSignupModal}
-        />
         <Animated.View
           style={[styles.logoArea, { maxHeight: logoAreaMaxHeight }]}
         >
@@ -71,7 +68,10 @@ export default function LoginScreen() {
         <View style={styles.inputArea}>
           <LoginForm />
           <HorizontalDivider backgroundColor="powderblue" text="or" />
-          <Button color={successColor} onPress={() => setShowSignupModal(true)}>
+          <Button
+            color={successColor}
+            onPress={() => navigation.navigate("signup")}
+          >
             <Text style={styles.signupButtonText}>Create an account</Text>
           </Button>
         </View>
