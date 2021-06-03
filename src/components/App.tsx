@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useAppDispatch, useAppSelector } from "..";
 import { LoadingScreen } from "../screens/LoadingScreen";
-import LoginScreen from "../screens/LoginScreen";
 import { validateUser } from "../slices/usersSlice";
 import { HomeTabNavigator } from "../navigators/HomeTabNavigator";
 import { cleanCacheDirectory } from "../slices/workoutLogsSlice";
+import { UnauthenticatedStackNavigator } from "../navigators/UnauthenticatedStackNavigator";
 
 export function App() {
   const dispatch = useAppDispatch();
@@ -19,7 +19,7 @@ export function App() {
 
   switch (authenticationStatus) {
     case "unknown":
-      return <LoginScreen />;
+      return <UnauthenticatedStackNavigator />;
     case "pending":
       return <LoadingScreen />;
     case "confirmed":
