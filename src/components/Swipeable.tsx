@@ -39,6 +39,7 @@ interface SwipeableProps {
   height?: number;
   mainAreaStyle?: ViewStyle;
   snapDuration?: number;
+  swipeable?: boolean;
 }
 
 export function Swipeable({
@@ -50,6 +51,7 @@ export function Swipeable({
   height,
   mainAreaStyle,
   snapDuration = 250,
+  swipeable = true,
 }: SwipeableProps) {
   let swipeDirection: SwipeDirection = SwipeDirection.none;
 
@@ -64,7 +66,8 @@ export function Swipeable({
   const { translateX, panGestureEventHandler } = useHorizontalSwipeHandler(
     snapPoints,
     snapDuration,
-    swipeDirection
+    swipeDirection,
+    swipeable
   );
 
   const rightSnapPoint = snapPoints[0];
@@ -138,7 +141,8 @@ export function Swipeable({
 function useHorizontalSwipeHandler(
   snapPoints: number[],
   duration: number,
-  allowedSwipeDirections: SwipeDirection
+  allowedSwipeDirections: SwipeDirection,
+  swipeable: boolean
 ) {
   const translateX = useSharedValue(0);
 
@@ -150,6 +154,7 @@ function useHorizontalSwipeHandler(
       ctx.startX = translateX.value;
     },
     onActive: ({ translationX }, ctx) => {
+      if (!swipeable) return;
       const totalTranslationX = ctx.startX + translationX;
       switch (allowedSwipeDirections) {
         case SwipeDirection.any:
@@ -166,6 +171,7 @@ function useHorizontalSwipeHandler(
       }
     },
     onEnd: ({ translationX, velocityX }) => {
+      if (!swipeable) return;
       translateX.value = withTiming(
         findNearestSnapPoint(translationX, velocityX, snapPoints),
         { duration, easing: Easing.inOut(Easing.ease) }
