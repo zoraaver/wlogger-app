@@ -1,9 +1,9 @@
-import { useNavigation } from "@react-navigation/core";
+import { useNavigation } from "@react-navigation/native";
 import * as React from "react";
 import { View } from "react-native";
 import { StyleSheet, Text } from "react-native";
 import { useAppDispatch } from "..";
-import { WorkoutPlanNavigation } from "../navigators/WorkoutPlanStackNavigator";
+import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import {
   deleteWorkoutPlan,
   workoutPlanHeaderData,
@@ -16,15 +16,30 @@ import { Swipeable } from "./Swipeable";
 
 interface WorkoutPlanItemProps {
   workoutPlan: workoutPlanHeaderData;
+  swipeable: boolean;
 }
 
 const leftSnapPoint = -100;
 const snapPoints = [leftSnapPoint, 0];
 
-export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
+export function WorkoutPlanItem({
+  workoutPlan,
+  swipeable,
+}: WorkoutPlanItemProps) {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<WorkoutPlanNavigation>();
   const [collapsed, setCollapsed] = React.useState(false);
+
+  const navigation = useNavigation<HomeNavigation>();
+
+  function handlePlanClick() {
+    navigation.navigate("Plans", {
+      screen: "show",
+      params: {
+        workoutPlanName: workoutPlan.name,
+        id: workoutPlan._id,
+      },
+    });
+  }
 
   return (
     <Collapsible
@@ -46,13 +61,9 @@ export function WorkoutPlanItem({ workoutPlan }: WorkoutPlanItemProps) {
         )}
         snapPoints={snapPoints}
         height={120}
-        onPress={() =>
-          navigation.navigate("show", {
-            workoutPlanName: workoutPlan.name,
-            id: workoutPlan._id,
-          })
-        }
+        onPress={handlePlanClick}
         mainAreaStyle={styles.workoutPlanItem}
+        swipeable={swipeable}
       >
         <WorkoutPlanDetails workoutPlan={workoutPlan} />
       </Swipeable>
