@@ -5,7 +5,6 @@ import {
 } from "@react-navigation/bottom-tabs";
 import { NavigatorScreenParams, RouteProp } from "@react-navigation/native";
 import * as React from "react";
-import { HomeScreen } from "../screens/HomeScreen";
 import { BalsamiqSans, primaryColor } from "../util/constants";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import {
@@ -25,16 +24,17 @@ import {
   SettingsStackNavigator,
   SettingsStackNavigatorParamList,
 } from "./SettingsStackNavigator";
+import { HomeStackNavigator, HomeStackParamList } from "./HomeStackNavigator";
 
-type HomeTabParamList = {
-  Home: undefined;
+type AuthenticatedTabParamList = {
+  Home: NavigatorScreenParams<HomeStackParamList>;
   Logs: NavigatorScreenParams<WorkoutLogStackParamList>;
   Plans: NavigatorScreenParams<WorkoutPlanStackParamList>;
   Settings: NavigatorScreenParams<SettingsStackNavigatorParamList>;
   NewLog: NavigatorScreenParams<NewWorkoutLogStackParamList>;
 };
 
-export type HomeNavigation = BottomTabNavigationProp<HomeTabParamList>;
+export type AuthenticatedNavigation = BottomTabNavigationProp<AuthenticatedTabParamList>;
 
 function tabScreenOptions({
   route,
@@ -66,9 +66,9 @@ function tabScreenOptions({
   };
 }
 
-const Tab = createBottomTabNavigator<HomeTabParamList>();
+const Tab = createBottomTabNavigator<AuthenticatedTabParamList>();
 
-export function HomeTabNavigator() {
+export function AuthenticatedTabNavigator() {
   const logInProgress = useAppSelector((state) => state.UI.logInProgress);
 
   return (
@@ -81,6 +81,7 @@ export function HomeTabNavigator() {
         keyboardHidesTabBar: true,
       }}
       screenOptions={tabScreenOptions}
+      lazy={false}
     >
       {logInProgress ? (
         <Tab.Screen
@@ -92,7 +93,7 @@ export function HomeTabNavigator() {
         <>
           <Tab.Screen component={WorkoutLogStackNavigator} name="Logs" />
           <Tab.Screen component={WorkoutPlanStackNavigator} name="Plans" />
-          <Tab.Screen component={HomeScreen} name="Home" />
+          <Tab.Screen component={HomeStackNavigator} name="Home" />
           <Tab.Screen component={SettingsStackNavigator} name="Settings" />
         </>
       )}
