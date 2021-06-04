@@ -1,10 +1,12 @@
-import { useFocusEffect } from "@react-navigation/core";
+import { useFocusEffect, useNavigation } from "@react-navigation/core";
 import * as React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, StyleSheet, Text } from "react-native";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
+import { HorizontalDivider } from "../components/HorizontalDivider";
+import { WorkoutPlanItem } from "../components/WorkoutPlanItem";
 import { ExerciseTable } from "../containers/ExerciseTable";
+import { HomeNavigation } from "../navigators/HomeTabNavigator";
 import { setLogInProgress } from "../slices/UISlice";
 import {
   clearEditWorkoutLog,
@@ -12,18 +14,15 @@ import {
 } from "../slices/workoutLogsSlice";
 import { getCurrentPlan } from "../slices/workoutPlansSlice";
 import { getNextWorkout, workoutData } from "../slices/workoutsSlice";
-import {
-  BalsamiqSans,
-  Helvetica,
-  infoColor,
-  successColor,
-} from "../util/constants";
+import { Helvetica, successColor } from "../util/constants";
 import { isToday, isTomorrow } from "../util/util";
 
 export function HomeScreen() {
   const dispatch = useAppDispatch();
   const nextWorkout = useAppSelector((state) => state.workouts.nextWorkout);
+  const currentPlan = useAppSelector((state) => state.workoutPlans.currentPlan);
   const message = useAppSelector((state) => state.workouts.message);
+  const navigation = useNavigation<HomeNavigation>();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -38,46 +37,54 @@ export function HomeScreen() {
     dispatch(clearFormVideos());
   }
 
+  function handleStartPlan() {
+    navigation.jumpTo("Plans", { screen: "index" });
+  }
+
   return (
-    <>
-      <SafeAreaView style={styles.homeScreenTopSafeArea} edges={["top"]} />
-      <SafeAreaView style={styles.homeScreen} edges={["left", "right"]}>
-        <ScrollView>
-          <View style={styles.nextWorkout}>
-            <View style={styles.nextWorkoutHeader}>
-              <Text style={styles.nextWorkoutHeaderText}>
-                {renderHeaderText(nextWorkout, message)}
-              </Text>
-            </View>
-            {nextWorkout ? (
-              <ExerciseTable workout={nextWorkout} />
-            ) : (
-              message && (
-                <View style={styles.nextWorkoutBody}>
-                  <Button onPress={() => {}} color={successColor}>
-                    <Text style={styles.buttonText}>Start a new plan</Text>
-                  </Button>
-                  <Button onPress={handleBeginWorkout} color={successColor}>
-                    <Text style={styles.buttonText}>Log a workout</Text>
-                  </Button>
-                </View>
-              )
-            )}
-            <View style={styles.beginWorkout}>
-              <BeginWorkoutButton
-                workout={nextWorkout}
-                handleBeginWorkout={handleBeginWorkout}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <ScrollView style={styles.homeScreen}>
+      <Text style={styles.nextWorkoutHeaderText}>
+        {renderHeaderText(nextWorkout, message)}
+      </Text>
+      {nextWorkout ? (
+        <>
+          <ExerciseTable workout={nextWorkout} />
+          <BeginWorkoutButton
+            workout={nextWorkout}
+            handleBeginWorkout={handleBeginWorkout}
+          />
+        </>
+      ) : (
+        <>
+          <Button
+            onPress={handleStartPlan}
+            color={successColor}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Start a new plan</Text>
+          </Button>
+          <Button
+            onPress={handleBeginWorkout}
+            color={successColor}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Log a workout</Text>
+          </Button>
+        </>
+      )}
+      {currentPlan ? (
+        <>
+          <Text style={styles.nextWorkoutHeaderText}>Current plan: </Text>
+          <HorizontalDivider />
+          <WorkoutPlanItem workoutPlan={currentPlan} swipeable={false} />
+        </>
+      ) : null}
+    </ScrollView>
   );
 }
 
 interface BeginWorkoutButtonProps {
-  workout?: workoutData;
+  workout: workoutData;
   handleBeginWorkout: () => void;
 }
 
@@ -85,13 +92,17 @@ function BeginWorkoutButton({
   workout,
   handleBeginWorkout,
 }: BeginWorkoutButtonProps) {
-  if (!workout || !workout.date) return null;
+  if (!workout.date) return null;
   const workoutDate: Date = new Date(workout.date as string);
   const buttonText: string = isToday(workoutDate)
     ? "Begin workout"
     : "Log a separate workout";
   return (
-    <Button color={successColor} onPress={handleBeginWorkout}>
+    <Button
+      color={successColor}
+      onPress={handleBeginWorkout}
+      style={styles.button}
+    >
       <Text style={styles.buttonText}>{buttonText}</Text>
     </Button>
   );
@@ -118,30 +129,15 @@ function renderHeaderText(workout?: workoutData, message?: string) {
 }
 
 const styles = StyleSheet.create({
-  homeScreenTopSafeArea: { flex: 0, backgroundColor: infoColor },
-  homeScreen: { flex: 1, backgroundColor: "powderblue" },
-  nextWorkout: {
-    flex: 1,
-  },
-  nextWorkoutHeader: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 10,
-    backgroundColor: infoColor,
-    maxHeight: 100,
-  },
+  homeScreenTopSafeArea: { flex: 1, backgroundColor: "powderblue" },
+  homeScreen: { backgroundColor: "powderblue", flex: 1 },
   nextWorkoutHeaderText: {
     fontSize: 25,
-    fontFamily: BalsamiqSans,
     textAlign: "center",
-  },
-  nextWorkoutBody: {
-    margin: 20,
-    justifyContent: "space-around",
-    minHeight: 100,
+    padding: 10,
+    flex: 1,
+    backgroundColor: "lightyellow",
   },
   buttonText: { fontSize: 18, fontFamily: Helvetica, color: "white" },
-  beginWorkout: {
-    margin: 20,
-  },
+  button: { marginHorizontal: 20, marginVertical: 10 },
 });
