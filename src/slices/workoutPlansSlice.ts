@@ -389,10 +389,11 @@ const slice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(
       postWorkoutPlan.fulfilled,
-      (state, action: PayloadAction<workoutPlanData>) => {
-        state.success = `${action.payload.name} successfully created`;
-        state.editWorkoutPlan = action.payload;
-        state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
+      (state, { payload: workoutPlan }: PayloadAction<workoutPlanData>) => {
+        state.success = `${workoutPlan.name} successfully created`;
+        workoutPlan.length = calculateLength(workoutPlan);
+        state.editWorkoutPlan = workoutPlan;
+        state.data.push(workoutPlan as workoutPlanHeaderData);
       }
     );
 
@@ -424,6 +425,7 @@ const slice = createSlice({
         state.error = undefined;
       }
     );
+
     builder.addCase(
       getWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
@@ -431,6 +433,7 @@ const slice = createSlice({
         state.error = (action.payload as { message: string }).message;
       }
     );
+
     builder.addCase(
       patchWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData>) => {
@@ -441,6 +444,7 @@ const slice = createSlice({
         state.planUpdateInProgress = false;
       }
     );
+
     builder.addCase(
       patchWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
@@ -449,9 +453,11 @@ const slice = createSlice({
         state.planUpdateInProgress = false;
       }
     );
+
     builder.addCase(patchWorkoutPlan.pending, (state) => {
       state.planUpdateInProgress = true;
     });
+
     builder.addCase(
       deleteWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData["_id"]>) => {
@@ -464,6 +470,7 @@ const slice = createSlice({
         state.error = undefined;
       }
     );
+
     builder.addCase(
       deleteWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
@@ -471,16 +478,20 @@ const slice = createSlice({
         state.error = (action.payload as { message: string }).message;
       }
     );
+
     builder.addCase(
       patchStartWorkoutPlan.fulfilled,
       (state, action: PayloadAction<{ id: string; start: string }>) => {
         const previousPlan = state.data.find(
           (plan: workoutPlanHeaderData) => plan.status === "In progress"
         );
+
         if (previousPlan !== undefined) previousPlan.status = "Not started";
+
         const currentPlan = state.data.find(
           (plan: workoutPlanHeaderData) => plan._id === action.payload.id
         );
+
         if (currentPlan) {
           currentPlan.status = "In progress";
           currentPlan.start = action.payload.start;
@@ -492,16 +503,19 @@ const slice = createSlice({
         }
       }
     );
+
     builder.addCase(patchStartWorkoutPlan.rejected, (state, action) => {
       state.success = undefined;
       state.error = action.error.message;
     });
+
     builder.addCase(getCurrentPlan.fulfilled, (state, action) => {
       state.error = undefined;
       state.currentPlan = action.payload;
       state.currentPlan.length = calculateLength(state.currentPlan);
     });
-    builder.addCase(getCurrentPlan.rejected, (state, action) => {
+
+    builder.addCase(getCurrentPlan.rejected, (state) => {
       state.currentPlan = undefined;
     });
   },
