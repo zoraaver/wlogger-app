@@ -13,7 +13,7 @@ import { Button } from "./Button";
 import { baseURL } from "../config/axios.config";
 import { useNavigation, useRoute } from "@react-navigation/core";
 import { useAppDispatch } from "..";
-import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { Swipeable } from "./Swipeable";
 import { Collapsible } from "./Collapsible";
 import { AnimatedSwipeButton } from "./AnimatedSwipeButton";
@@ -33,7 +33,7 @@ export function WorkoutLogVideoRow({
   deleteVideo,
   showDownload,
 }: WorkoutLogVideo) {
-  const navigation = useNavigation<HomeNavigation>();
+  const navigation = useNavigation<AuthenticatedNavigation>();
   const route = useRoute();
   const dispatch = useAppDispatch();
 

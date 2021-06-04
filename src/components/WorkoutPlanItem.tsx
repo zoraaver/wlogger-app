@@ -3,7 +3,7 @@ import * as React from "react";
 import { View } from "react-native";
 import { StyleSheet, Text } from "react-native";
 import { useAppDispatch } from "..";
-import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import {
   deleteWorkoutPlan,
   workoutPlanHeaderData,
@@ -29,7 +29,7 @@ export function WorkoutPlanItem({
   const dispatch = useAppDispatch();
   const [collapsed, setCollapsed] = React.useState(false);
 
-  const navigation = useNavigation<HomeNavigation>();
+  const navigation = useNavigation<AuthenticatedNavigation>();
 
   function handlePlanClick() {
     navigation.navigate("Plans", {

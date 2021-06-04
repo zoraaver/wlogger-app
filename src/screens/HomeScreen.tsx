@@ -6,7 +6,7 @@ import { Button } from "../components/Button";
 import { HorizontalDivider } from "../components/HorizontalDivider";
 import { WorkoutPlanItem } from "../components/WorkoutPlanItem";
 import { ExerciseTable } from "../containers/ExerciseTable";
-import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { setLogInProgress } from "../slices/UISlice";
 import {
   clearEditWorkoutLog,
@@ -22,7 +22,7 @@ export function HomeScreen() {
   const nextWorkout = useAppSelector((state) => state.workouts.nextWorkout);
   const currentPlan = useAppSelector((state) => state.workoutPlans.currentPlan);
   const message = useAppSelector((state) => state.workouts.message);
-  const navigation = useNavigation<HomeNavigation>();
+  const navigation = useNavigation<AuthenticatedNavigation>();
 
   useFocusEffect(
     React.useCallback(() => {

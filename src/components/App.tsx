@@ -2,7 +2,7 @@ import * as React from "react";
 import { useAppDispatch, useAppSelector } from "..";
 import { LoadingScreen } from "../screens/LoadingScreen";
 import { validateUser } from "../slices/usersSlice";
-import { HomeTabNavigator } from "../navigators/HomeTabNavigator";
+import { AuthenticatedTabNavigator } from "../navigators/AuthenticatedTabNavigator";
 import { cleanCacheDirectory } from "../slices/workoutLogsSlice";
 import { UnauthenticatedStackNavigator } from "../navigators/UnauthenticatedStackNavigator";
 import { useNetInfo } from "@react-native-community/netinfo";
@@ -32,6 +32,6 @@ export function App() {
     case "pending":
       return <LoadingScreen />;
     case "confirmed":
-      return <HomeTabNavigator />;
+      return <AuthenticatedTabNavigator />;
   }
 }

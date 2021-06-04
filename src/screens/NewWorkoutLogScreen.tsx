@@ -7,7 +7,7 @@ import { Button } from "../components/Button";
 import { WorkoutLogForm } from "../components/WorkoutLogForm";
 import { WorkoutLogVideoRow } from "../components/WorkoutLogVideoRow";
 import { WorkoutLogTable } from "../containers/WorkoutLogTable";
-import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { NewWorkoutLogStackParamList } from "../navigators/NewWorkoutLogStackNavigator";
 import { setLogInProgress } from "../slices/UISlice";
 import {
@@ -26,7 +26,7 @@ export type NewWorkoutLogScreenRouteProp = RouteProp<
 
 export function NewWorkoutLogScreen() {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<HomeNavigation>();
+  const navigation = useNavigation<AuthenticatedNavigation>();
 
   const workoutLog = useAppSelector(
     (state) => state.workoutLogs.editWorkoutLog

@@ -14,7 +14,7 @@ import { addFormVideo, addSet, EntryData } from "../slices/workoutLogsSlice";
 import { Helvetica, successColor } from "../util/constants";
 import { useAppDispatch } from "..";
 import { useNavigation, useRoute } from "@react-navigation/core";
-import { HomeNavigation } from "../navigators/HomeTabNavigator";
+import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
 import { getFileStats } from "../util/util";
 import NumericInput, { INumericInputProps } from "react-native-numeric-input";
@@ -34,7 +34,7 @@ export function WorkoutLogForm() {
     unit: "kg",
     restInterval: Date.now(),
   });
-  const navigation = useNavigation<HomeNavigation>();
+  const navigation = useNavigation<AuthenticatedNavigation>();
   const width = useWindowDimensions().width;
   const orientation: DeviceOrientation = useOrientation();
   const numericInputWidth =
