@@ -225,6 +225,7 @@ const slice = createSlice({
       }
       state.editWorkoutPlan.length = 0;
     },
+
     addWeek(state, action: PayloadAction<weekData | undefined>) {
       if (!state.editWorkoutPlan) return;
       if (action.payload) {
@@ -239,6 +240,7 @@ const slice = createSlice({
       }
       state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
     },
+
     addWorkout(state, action: PayloadAction<WorkoutPosition>) {
       const { weekPosition, day } = action.payload;
       const weekIndex:
@@ -256,6 +258,7 @@ const slice = createSlice({
         );
       }
     },
+
     addExercise(
       state,
       action: PayloadAction<
@@ -280,6 +283,7 @@ const slice = createSlice({
         }
       }
     },
+
     updateExercise(
       state,
       action: PayloadAction<
@@ -300,6 +304,7 @@ const slice = createSlice({
       );
       workout?.exercises.splice(exerciseIndex, 1, updatedExercise);
     },
+
     deleteExercise(state, action: PayloadAction<ExercisePosition>) {
       const { weekPosition, day, exerciseIndex } = action.payload;
       const week = state.editWorkoutPlan?.weeks.find(
@@ -314,6 +319,7 @@ const slice = createSlice({
         }
       }
     },
+
     deleteWeek(state, action: PayloadAction<number>) {
       const position: number = action.payload;
       if (!state.editWorkoutPlan) return;
@@ -331,6 +337,7 @@ const slice = createSlice({
         state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
       }
     },
+
     deleteWorkout(state, action: PayloadAction<WorkoutPosition>) {
       if (!state.editWorkoutPlan) return;
       const { weekPosition, day } = action.payload;
@@ -346,6 +353,7 @@ const slice = createSlice({
         }
       }
     },
+
     deleteEmptyWorkouts(state, action: PayloadAction<number>) {
       if (!state.editWorkoutPlan) return;
       const postion: number = action.payload;
@@ -358,6 +366,7 @@ const slice = createSlice({
         );
       }
     },
+
     changeWeekRepeat(
       state,
       action: PayloadAction<{ weekPosition: number; newRepeat: number }>
@@ -379,15 +388,17 @@ const slice = createSlice({
       weekToChange.repeat = newRepeat;
       state.editWorkoutPlan.length = calculateLength(state.editWorkoutPlan);
     },
+
     setSuccess(state, action: PayloadAction<string | undefined>) {
       state.success = action.payload;
     },
+
     setError(state, action: PayloadAction<string | undefined>) {
       state.error = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder.addCase(
+  extraReducers: ({ addCase }) => {
+    addCase(
       postWorkoutPlan.fulfilled,
       (state, { payload: workoutPlan }: PayloadAction<workoutPlanData>) => {
         state.success = `${workoutPlan.name} successfully created`;
@@ -397,11 +408,11 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(postWorkoutPlan.rejected, (state, action) => {
+    addCase(postWorkoutPlan.rejected, (state) => {
       state.success = undefined;
     });
 
-    builder.addCase(getWorkoutPlans.fulfilled, (state, action) => {
+    addCase(getWorkoutPlans.fulfilled, (state, action) => {
       state.data = action.payload;
       state.data.forEach((plan: workoutPlanHeaderData) => {
         plan.length = calculateLength(plan);
@@ -409,15 +420,15 @@ const slice = createSlice({
       state.dataPending = false;
     });
 
-    builder.addCase(getWorkoutPlans.pending, (state) => {
+    addCase(getWorkoutPlans.pending, (state) => {
       state.dataPending = true;
     });
 
-    builder.addCase(getWorkoutPlans.rejected, (state) => {
+    addCase(getWorkoutPlans.rejected, (state) => {
       state.dataPending = false;
     });
 
-    builder.addCase(
+    addCase(
       getWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData>) => {
         state.editWorkoutPlan = action.payload;
@@ -426,7 +437,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(
+    addCase(
       getWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
         state.editWorkoutPlan = undefined;
@@ -434,7 +445,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(
+    addCase(
       patchWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData>) => {
         state.editWorkoutPlan = action.payload;
@@ -445,7 +456,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(
+    addCase(
       patchWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
         state.editWorkoutPlan = undefined;
@@ -454,11 +465,11 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(patchWorkoutPlan.pending, (state) => {
+    addCase(patchWorkoutPlan.pending, (state) => {
       state.planUpdateInProgress = true;
     });
 
-    builder.addCase(
+    addCase(
       deleteWorkoutPlan.fulfilled,
       (state, action: PayloadAction<workoutPlanData["_id"]>) => {
         state.editWorkoutPlan = undefined;
@@ -471,7 +482,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(
+    addCase(
       deleteWorkoutPlan.rejected,
       (state, action: PayloadAction<unknown>) => {
         state.editWorkoutPlan = undefined;
@@ -479,7 +490,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(
+    addCase(
       patchStartWorkoutPlan.fulfilled,
       (state, action: PayloadAction<{ id: string; start: string }>) => {
         const previousPlan = state.data.find(
@@ -504,18 +515,18 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(patchStartWorkoutPlan.rejected, (state, action) => {
+    addCase(patchStartWorkoutPlan.rejected, (state, action) => {
       state.success = undefined;
       state.error = action.error.message;
     });
 
-    builder.addCase(getCurrentPlan.fulfilled, (state, action) => {
+    addCase(getCurrentPlan.fulfilled, (state, action) => {
       state.error = undefined;
       state.currentPlan = action.payload;
       state.currentPlan.length = calculateLength(state.currentPlan);
     });
 
-    builder.addCase(getCurrentPlan.rejected, (state) => {
+    addCase(getCurrentPlan.rejected, (state) => {
       state.currentPlan = undefined;
     });
   },

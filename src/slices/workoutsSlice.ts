@@ -55,8 +55,8 @@ const slice = createSlice({
   initialState,
   name: "workouts",
   reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(
+  extraReducers: ({ addCase }) => {
+    addCase(
       getNextWorkout.fulfilled,
       (state, action: PayloadAction<workoutData | string>) => {
         if (typeof action.payload === "string") {
@@ -68,7 +68,8 @@ const slice = createSlice({
         }
       }
     );
-    builder.addCase(getNextWorkout.rejected, (state, action) => {
+
+    addCase(getNextWorkout.rejected, (state, action) => {
       state.nextWorkout = undefined;
       state.message = action.error.message;
     });

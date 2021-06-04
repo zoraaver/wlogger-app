@@ -157,25 +157,25 @@ const slice = createSlice({
       state.signupError = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder.addCase(loginUser.rejected, (state, action) => {
+  extraReducers: ({ addCase }) => {
+    addCase(loginUser.rejected, (state, action) => {
       state.data = null;
       state.loginError = action.error.message;
       state.authenticationStatus = "unknown";
     });
-    builder.addCase(
-      loginUser.fulfilled,
-      (state, action: PayloadAction<userData>) => {
-        const userData = action.payload;
-        state.data = userData;
-        state.loginError = undefined;
-        state.authenticationStatus = "confirmed";
-      }
-    );
-    builder.addCase(loginUser.pending, (state, action) => {
+
+    addCase(loginUser.fulfilled, (state, action: PayloadAction<userData>) => {
+      const userData = action.payload;
+      state.data = userData;
+      state.loginError = undefined;
+      state.authenticationStatus = "confirmed";
+    });
+
+    addCase(loginUser.pending, (state, action) => {
       state.authenticationStatus = "pending";
     });
-    builder.addCase(
+
+    addCase(
       googleLoginUser.fulfilled,
       (state, action: PayloadAction<userData>) => {
         const userData = action.payload;
@@ -184,15 +184,18 @@ const slice = createSlice({
         state.authenticationStatus = "confirmed";
       }
     );
-    builder.addCase(googleLoginUser.rejected, (state, action) => {
+
+    addCase(googleLoginUser.rejected, (state, action) => {
       state.data = null;
       state.loginError = action.error.message;
       state.authenticationStatus = "unknown";
     });
-    builder.addCase(googleLoginUser.pending, (state, action) => {
+
+    addCase(googleLoginUser.pending, (state, action) => {
       state.authenticationStatus = "pending";
     });
-    builder.addCase(
+
+    addCase(
       validateUser.fulfilled,
       (state, action: PayloadAction<userData>) => {
         const userData = action.payload;
@@ -200,52 +203,48 @@ const slice = createSlice({
         state.authenticationStatus = "confirmed";
       }
     );
-    builder.addCase(validateUser.pending, (state, action) => {
+
+    addCase(validateUser.pending, (state, action) => {
       state.authenticationStatus = "pending";
     });
-    builder.addCase(validateUser.rejected, (state, action) => {
+
+    addCase(validateUser.rejected, (state, action) => {
       state.data = null;
       state.authenticationStatus = "unknown";
     });
-    builder.addCase(
-      verifyUser.fulfilled,
-      (state, action: PayloadAction<userData>) => {
-        const userData = action.payload;
-        state.data = userData;
-        state.authenticationStatus = "confirmed";
-      }
-    );
-    builder.addCase(verifyUser.rejected, (state, action) => {
+
+    addCase(verifyUser.fulfilled, (state, action: PayloadAction<userData>) => {
+      const userData = action.payload;
+      state.data = userData;
+      state.authenticationStatus = "confirmed";
+    });
+
+    addCase(verifyUser.rejected, (state, action) => {
       state.data = null;
       state.verificationError = action.error.message;
       state.authenticationStatus = "unknown";
     });
-    builder.addCase(
-      signupUser.fulfilled,
-      (state, action: PayloadAction<string>) => {
-        state.signupSuccess = `Account successfully created: a verification email has been sent to ${action.payload}`;
-        state.signupError = undefined;
-      }
-    );
-    builder.addCase(
-      signupUser.rejected,
-      (state, action: PayloadAction<unknown>) => {
-        const signupError = action.payload as signupError;
-        state.signupError = {
-          field: signupError.field,
-          error: signupError.error,
-        };
-        state.signupSuccess = undefined;
-      }
-    );
-    builder.addCase(
-      logoutUser.fulfilled,
-      (state, action: PayloadAction<void>) => {
-        state.data = null;
-        state.authenticationStatus = "unknown";
-      }
-    );
-    builder.addCase(logoutUser.pending, (state, action) => {
+
+    addCase(signupUser.fulfilled, (state, action: PayloadAction<string>) => {
+      state.signupSuccess = `Account successfully created: a verification email has been sent to ${action.payload}`;
+      state.signupError = undefined;
+    });
+
+    addCase(signupUser.rejected, (state, action: PayloadAction<unknown>) => {
+      const signupError = action.payload as signupError;
+      state.signupError = {
+        field: signupError.field,
+        error: signupError.error,
+      };
+      state.signupSuccess = undefined;
+    });
+
+    addCase(logoutUser.fulfilled, (state, action: PayloadAction<void>) => {
+      state.data = null;
+      state.authenticationStatus = "unknown";
+    });
+
+    addCase(logoutUser.pending, (state, action) => {
       state.authenticationStatus = "pending";
     });
   },

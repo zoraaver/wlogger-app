@@ -439,8 +439,8 @@ const slice = createSlice({
       state.videoUploadProgress[fileName] = percentage;
     },
   },
-  extraReducers: (builder) => {
-    builder.addCase(
+  extraReducers: ({ addCase }) => {
+    addCase(
       postWorkoutLog.fulfilled,
       (state, action: PayloadAction<workoutLogData>) => {
         const dateLogged: Date = new Date(action.payload.createdAt as string);
@@ -448,21 +448,21 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(postWorkoutLog.rejected, (state, action) => {
+    addCase(postWorkoutLog.rejected, (state, action) => {
       state.editWorkoutLog = { exercises: [] };
       console.error(action.error.message);
     });
 
-    builder.addCase(postFormVideos.rejected, (state, action) => {
+    addCase(postFormVideos.rejected, (state, action) => {
       state.videoUploadProgress = {};
       console.error(action.error.message);
     });
 
-    builder.addCase(postFormVideos.fulfilled, (state, action) => {
+    addCase(postFormVideos.fulfilled, (state) => {
       state.videoUploadProgress = {};
     });
 
-    builder.addCase(
+    addCase(
       getWorkoutLogs.fulfilled,
       (state, action: PayloadAction<workoutLogHeaderData[]>) => {
         state.data = action.payload;
@@ -470,26 +470,26 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(getWorkoutLogs.pending, (state) => {
+    addCase(getWorkoutLogs.pending, (state) => {
       state.dataPending = true;
     });
 
-    builder.addCase(getWorkoutLogs.rejected, (state) => {
+    addCase(getWorkoutLogs.rejected, (state) => {
       state.dataPending = false;
     });
 
-    builder.addCase(
+    addCase(
       getWorkoutLog.fulfilled,
       (state, action: PayloadAction<workoutLogData>) => {
         state.editWorkoutLog = action.payload;
       }
     );
 
-    builder.addCase(getWorkoutLog.rejected, (state, action) => {
+    addCase(getWorkoutLog.rejected, (_, action) => {
       console.error(action.error.message);
     });
 
-    builder.addCase(
+    addCase(
       deleteWorkoutLog.fulfilled,
       (state, action: PayloadAction<string>) => {
         const deletedWorkoutLogId: string = action.payload;
@@ -500,12 +500,12 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(deleteWorkoutLog.rejected, (state, action) => {
+    addCase(deleteWorkoutLog.rejected, (state) => {
       state.error = "Deleting workout failed";
       state.success = undefined;
     });
 
-    builder.addCase(
+    addCase(
       deleteSetVideo.fulfilled,
       (state, action: PayloadAction<{ exerciseId: string; setId: string }>) => {
         const { exerciseId, setId } = action.payload;
@@ -518,7 +518,7 @@ const slice = createSlice({
       }
     );
 
-    builder.addCase(deleteSetVideo.rejected, (state, action) => {
+    addCase(deleteSetVideo.rejected, (_, action) => {
       console.error(action.error.message);
     });
   },
