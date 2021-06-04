@@ -46,7 +46,9 @@ export function WorkoutPlansScreen() {
           style={{ flex: 1 }}
           data={workoutPlans}
           keyExtractor={(workoutPlan) => workoutPlan._id}
-          renderItem={(data) => <WorkoutPlanItem workoutPlan={data.item} />}
+          renderItem={(data) => (
+            <WorkoutPlanItem workoutPlan={data.item} swipeable={true} />
+          )}
           ItemSeparatorComponent={() => <HorizontalDivider />}
           ListFooterComponent={() => <HorizontalDivider />}
           ListHeaderComponent={() => <WorkoutPlanListHeader />}
@@ -76,7 +78,10 @@ function WorkoutPlanListHeader() {
         setNewPlanInputVisible(false);
       } else {
         dispatch(setInitialWorkoutPlanData(newPlanName));
-        navigation.navigate("show", { workoutPlanName: newPlanName });
+        navigation.navigate("show", {
+          workoutPlanName: newPlanName,
+          id: undefined,
+        });
       }
     }
   }
