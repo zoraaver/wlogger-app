@@ -1,3 +1,4 @@
+import { Linking, AlertButton, Alert, Platform } from "react-native";
 import EncryptedStorage from "react-native-encrypted-storage";
 import RNFetchBlob from "rn-fetch-blob";
 import {
@@ -7,6 +8,7 @@ import {
   workoutPlanHeaderData,
 } from "../slices/workoutPlansSlice";
 import { incrementField } from "../slices/workoutsSlice";
+import AndroidOpenSettings from "react-native-android-open-settings";
 
 export function renderRestInterval(
   seconds?: number,
@@ -106,4 +108,39 @@ export function DDMMYYYYDateFormat(date: Date | string | undefined): string {
   if (month < 10) month = "0" + month;
   if (days < 10) days = "0" + days;
   return `${days}/${month}/${years}`;
+}
+
+export async function NoInternetAlert() {
+  const alertButtons: AlertButton[] = [{ text: "Ok" }];
+
+  const canOpenOSSettings = await openOSSettings();
+
+  if (canOpenOSSettings !== undefined) {
+    alertButtons.push({
+      text: "Settings",
+      onPress: canOpenOSSettings,
+    });
+  }
+
+  const title = "No internet connection";
+  const message =
+    "An internet connection is required for this app - please enable wifi or cellular if they are disabled.";
+
+  Alert.alert(title, message, alertButtons);
+}
+
+async function openOSSettings(): Promise<(() => void) | undefined> {
+  if (Platform.OS === "ios") {
+    let canOpenWifiSettings: boolean = false;
+
+    const networkSettingsUrl = "App-Prefs:root=WIFI";
+
+    try {
+      canOpenWifiSettings = await Linking.canOpenURL(networkSettingsUrl);
+    } catch (error) {}
+
+    if (canOpenWifiSettings) return () => Linking.openURL(networkSettingsUrl);
+  } else if (Platform.OS === "android") {
+    return AndroidOpenSettings.airplaneModeSettings;
+  }
 }
