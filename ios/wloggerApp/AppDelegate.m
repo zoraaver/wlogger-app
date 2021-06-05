@@ -5,7 +5,7 @@
 #import <React/RCTRootView.h>
 
 #ifdef FB_SONARKIT_ENABLED
-#import "RNSplashScreen.h"
+#import "RNBootSplash.h"
 #import <FlipperKit/FlipperClient.h>
 #import <FlipperKitLayoutPlugin/FlipperKitLayoutPlugin.h>
 #import <FlipperKitNetworkPlugin/FlipperKitNetworkPlugin.h>
@@ -54,7 +54,7 @@ static void InitializeFlipper(UIApplication *application) {
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  [RNSplashScreen show];
+  [RNBootSplash initWithStoryboard:@"LaunchScreen" rootView:rootView];
   return YES;
 }
 - (void)applicationWillResignActive:(UIApplication *)application {
