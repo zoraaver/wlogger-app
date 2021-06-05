@@ -3,7 +3,6 @@ import * as React from "react";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
 import { RecordResponse, RNCamera as Camera } from "react-native-camera";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { Helvetica, infoColor } from "../util/constants";
 import { useInterval } from "../util/hooks";
@@ -50,10 +49,7 @@ export function WorkoutLogCameraScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={styles.workoutLogCameraScreen}
-      edges={["left", "right"]}
-    >
+    <View style={styles.workoutLogCameraScreen}>
       <Camera
         type={Camera.Constants.Type.back}
         ref={camera}
@@ -67,7 +63,7 @@ export function WorkoutLogCameraScreen() {
         isRecording={isRecording}
         handleCancel={handleCancel}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

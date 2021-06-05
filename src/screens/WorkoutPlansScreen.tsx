@@ -9,7 +9,6 @@ import {
   LayoutAnimation,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { Button } from "../components/Button";
 import { HorizontalDivider } from "../components/HorizontalDivider";
@@ -38,7 +37,7 @@ export function WorkoutPlansScreen() {
   const dataPending = useAppSelector((state) => state.workoutPlans.dataPending);
 
   return (
-    <SafeAreaView edges={["left", "right"]} style={styles.workoutPlansScreen}>
+    <View style={styles.workoutPlansScreen}>
       {dataPending && !workoutPlans.length ? (
         <ActivityIndicator size="large" color="grey" />
       ) : (
@@ -59,7 +58,7 @@ export function WorkoutPlansScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

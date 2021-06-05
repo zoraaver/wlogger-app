@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import { HorizontalDivider } from "../components/HorizontalDivider";
 import { WorkoutLogItem } from "../components/WorkoutLogItem";
@@ -33,10 +32,7 @@ export function WorkoutLogsScreen() {
   const dataPending = useAppSelector((state) => state.workoutLogs.dataPending);
 
   return (
-    <SafeAreaView
-      style={styles.workoutLogsScreen}
-      edges={["bottom", "right", "left"]}
-    >
+    <View style={styles.workoutLogsScreen}>
       {dataPending && !workoutLogs.length ? (
         <ActivityIndicator size="large" color="grey" />
       ) : (
@@ -54,7 +50,7 @@ export function WorkoutLogsScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

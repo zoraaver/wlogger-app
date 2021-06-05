@@ -55,10 +55,7 @@ export default function LoginScreen() {
 
   return (
     <DismissKeyboard>
-      <SafeAreaView
-        style={styles.loginScreen}
-        edges={["bottom", "right", "left"]}
-      >
+      <SafeAreaView style={styles.loginScreen} edges={["bottom"]}>
         <Animated.View
           style={[styles.logoArea, { maxHeight: logoAreaMaxHeight }]}
         >

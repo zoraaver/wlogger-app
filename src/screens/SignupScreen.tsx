@@ -1,6 +1,5 @@
 import * as React from "react";
 import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "..";
 import {
   setSignupError,
@@ -61,7 +60,7 @@ export function SignupScreen() {
 
   return (
     <DismissKeyboard>
-      <SafeAreaView style={styles.signupModal}>
+      <View style={styles.signupModal}>
         <View style={styles.signupForm}>
           <TextInput
             style={{ ...styles.signupInput, ...errorBorder("email") }}
@@ -133,7 +132,7 @@ export function SignupScreen() {
             <Text style={styles.signupButtonText}>Sign up</Text>
           </Button>
         </View>
-      </SafeAreaView>
+      </View>
     </DismissKeyboard>
   );
 }
