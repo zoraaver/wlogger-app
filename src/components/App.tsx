@@ -7,6 +7,14 @@ import { cleanCacheDirectory } from "../slices/workoutLogsSlice";
 import { UnauthenticatedStackNavigator } from "../navigators/UnauthenticatedStackNavigator";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { NoInternetAlert } from "../util/util";
+import RNBootSplash from "react-native-bootsplash";
+
+async function initialize(dispatch: ReturnType<typeof useAppDispatch>) {
+  await Promise.all([
+    dispatch(cleanCacheDirectory()),
+    dispatch(validateUser()),
+  ]);
+}
 
 export function App() {
   const dispatch = useAppDispatch();
@@ -22,8 +30,9 @@ export function App() {
   }, [isInternetReachable]);
 
   React.useEffect(() => {
-    dispatch(validateUser());
-    dispatch(cleanCacheDirectory());
+    initialize(dispatch).then(() => {
+      RNBootSplash.hide();
+    });
   }, []);
 
   switch (authenticationStatus) {
