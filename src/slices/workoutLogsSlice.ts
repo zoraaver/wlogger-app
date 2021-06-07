@@ -544,36 +544,21 @@ export const videoSetsSelector = createSelector(
   editWorkoutLogSelector,
   (workoutLog: workoutLogData) =>
     workoutLog.exercises
-      .map((exerciseLogData) =>
+      .map((exerciseLogData, exerciseIndex) =>
         exerciseLogData.sets
-          .filter((set) => set.formVideoExtension)
-          .map((set) => ({
+          .map((set, setIndex) => ({
             ...set,
             exerciseName: exerciseLogData.name,
-            exerciseId: exerciseLogData._id,
+            exerciseIndex,
+            setIndex,
             workoutLogId: workoutLog._id,
+            exerciseId: exerciseLogData._id,
+            setId: set._id,
           }))
+          .filter((set) => set.formVideoExtension)
       )
       .flat()
 );
-
-// utility methods
-
-export function findSetIndex(
-  exercise: exerciseLogData,
-  setId: string | undefined
-): number {
-  return exercise.sets.findIndex((set) => set._id === setId);
-}
-
-export function findExerciseIndex(
-  workoutLog: workoutLogData,
-  exerciseId: string | undefined
-): number {
-  return workoutLog.exercises.findIndex(
-    (exercise) => exercise._id === exerciseId
-  );
-}
 
 export const workoutLogsReducer = slice.reducer;
 export const {
