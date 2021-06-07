@@ -1,14 +1,6 @@
 import * as React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  useWindowDimensions,
-  LayoutAnimation,
-} from "react-native";
+import { View, Text, StyleSheet, LayoutAnimation } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import NumericInput, { INumericInputProps } from "react-native-numeric-input";
 import { useAppDispatch, useAppSelector } from "..";
 import {
   addExercise,
@@ -22,6 +14,9 @@ import { DeviceOrientation, useOrientation } from "../util/hooks";
 import { WeightUnitButtons } from "./WeightUnitButtons";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { Button } from "./Button";
+import { WeightInput } from "./WeightInput";
+import { RepsInput } from "./RepsInput";
+import { SetsInput } from "./SetsInput";
 
 const initialExerciseData: exerciseData = {
   name: "",
@@ -54,9 +49,8 @@ export function ExerciseForm({
   );
 
   const [formData, setFormData] = React.useState(initialExerciseData);
-  const { width } = useWindowDimensions();
-  const orientation: DeviceOrientation = useOrientation();
-  const numericInputWidth = width * 0.7;
+  const orientation = useOrientation();
+  const [numericInputWidth, setNumericInputWidth] = React.useState(200);
   const [exerciseNameError, setExerciseNameError] = React.useState("");
   const dispatch = useAppDispatch();
 
@@ -144,41 +138,33 @@ export function ExerciseForm({
           }
           placeholderTextColor={exerciseNameError ? "red" : "grey"}
           clearButtonMode="while-editing"
+          onLayout={({ nativeEvent }) =>
+            setNumericInputWidth(nativeEvent.layout.width)
+          }
         />
       </View>
       <View style={styles.inputSection}>
         <Text style={styles.inputLabel}>Sets: </Text>
-        <NumericInput
-          totalWidth={numericInputWidth}
-          {...commonNumericInputProps}
-          onChange={(sets) => setFormData({ ...formData, sets })}
-          value={formData.sets}
-          valueType="integer"
-          minValue={1}
-          initValue={formData.sets}
+        <SetsInput
+          sets={formData.sets}
+          onSetsChange={(sets) => setFormData({ ...formData, sets })}
+          width={numericInputWidth}
         />
       </View>
       <View style={styles.inputSection}>
         <Text style={styles.inputLabel}>Reps: </Text>
-        <NumericInput
-          totalWidth={numericInputWidth}
-          {...commonNumericInputProps}
+        <RepsInput
+          repetitions={formData.repetitions}
           onChange={(repetitions) => setFormData({ ...formData, repetitions })}
-          value={formData.repetitions}
-          valueType="integer"
-          initValue={formData.repetitions}
+          width={numericInputWidth}
         />
       </View>
       <View style={styles.inputSection}>
         <Text style={styles.inputLabel}>Weight: </Text>
-        <NumericInput
-          totalWidth={numericInputWidth}
-          {...commonNumericInputProps}
-          onChange={(weight) => setFormData({ ...formData, weight })}
-          value={formData.weight}
-          valueType="real"
-          step={1.25}
-          initValue={formData.weight}
+        <WeightInput
+          weight={formData.weight}
+          onWeightChange={(weight) => setFormData({ ...formData, weight })}
+          width={numericInputWidth}
         />
       </View>
       <View style={styles.inputSection}>
@@ -188,20 +174,10 @@ export function ExerciseForm({
           onUnitChange={(unit) => setFormData({ ...formData, unit })}
         />
       </View>
-      <Button
-        onPress={handleSubmit}
-        style={styles.iconButton}
-        color={successColor}
-      >
-        <Ionicon
-          name={isNewExercise ? "add" : "save"}
-          color="white"
-          size={23}
-        />
-        <Text style={styles.buttonText}>
-          {isNewExercise ? "Add exercise" : "Save changes"}
-        </Text>
-      </Button>
+      <AddOrSaveButton
+        handleSubmit={handleSubmit}
+        isNewExercise={isNewExercise}
+      />
       {isNewExercise ? null : (
         <Button
           onPress={handleDeleteExercise}
@@ -213,6 +189,29 @@ export function ExerciseForm({
         </Button>
       )}
     </View>
+  );
+}
+
+interface AddOrSaveButtonProps {
+  handleSubmit: () => void;
+  isNewExercise: boolean;
+}
+
+function AddOrSaveButton({
+  handleSubmit,
+  isNewExercise,
+}: AddOrSaveButtonProps) {
+  return (
+    <Button
+      onPress={handleSubmit}
+      style={styles.iconButton}
+      color={successColor}
+    >
+      <Ionicon name={isNewExercise ? "add" : "save"} color="white" size={23} />
+      <Text style={styles.buttonText}>
+        {isNewExercise ? "Add exercise" : "Save changes"}
+      </Text>
+    </Button>
   );
 }
 
@@ -257,16 +256,3 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
-
-const commonNumericInputProps: INumericInputProps = {
-  type: "plus-minus",
-  rounded: true,
-  leftButtonBackgroundColor: "red",
-  rightButtonBackgroundColor: successColor,
-  minValue: 0,
-  totalHeight: 50,
-  iconStyle: { color: "white" } as ViewStyle,
-  inputStyle: { backgroundColor: "white" },
-  containerStyle: { flex: 1 },
-  onChange: () => {},
-};
