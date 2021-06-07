@@ -32,9 +32,9 @@ function initialLogData(): EntryData {
 
 interface WorkoutLogFormProps {
   workout?: workoutData;
-  workoutPosition: WorkoutLogPosition;
-  advanceWorkoutPosition: () => void;
-  workoutFinished: boolean;
+  workoutPosition?: WorkoutLogPosition;
+  advanceWorkoutPosition?: () => void;
+  workoutFinished?: boolean;
 }
 
 export function WorkoutLogForm({
@@ -54,7 +54,7 @@ export function WorkoutLogForm({
   const [numericInputWidth, setNumericInputWidth] = React.useState(300);
 
   React.useEffect(() => {
-    if (workout && !workoutFinished) {
+    if (workout && !workoutFinished && workoutPosition) {
       const { exerciseIndex } = workoutPosition;
       const { repetitions, weight, name, _id, unit } = workout.exercises[
         exerciseIndex
@@ -105,7 +105,7 @@ export function WorkoutLogForm({
     }
 
     if (workout) {
-      advanceWorkoutPosition();
+      advanceWorkoutPosition?.();
     } else {
       setFormData({ ...formData, restInterval: Date.now() });
     }
