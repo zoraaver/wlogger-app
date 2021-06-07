@@ -61,6 +61,7 @@ export function NewWorkoutLogScreen() {
   const videoUploadInProgress = !!Object.keys(videoUploadProgress).length;
 
   const workout = useAppSelector((state) => state.workouts.nextWorkout);
+  const workoutIsToday = isWorkoutToday(workout);
 
   const [
     workoutPosition,
@@ -122,20 +123,24 @@ export function NewWorkoutLogScreen() {
 
   return (
     <ScrollView style={styles.newWorkoutLogScreen}>
-      {workout ? (
-        <WorkoutTableCollapsible
-          workout={workout}
-          workoutTableHeaderText={workoutTableHeaderText}
-        />
-      ) : null}
-      <Collapsible collapsed={workoutFinished}>
-        <WorkoutLogForm
-          workout={isWorkoutToday(workout) ? workout : undefined}
-          workoutPosition={workoutPosition}
-          advanceWorkoutPosition={advanceWorkoutPosition}
-          workoutFinished={workoutFinished}
-        />
-      </Collapsible>
+      {workout && workoutIsToday ? (
+        <>
+          <WorkoutTableCollapsible
+            workout={workout}
+            workoutTableHeaderText={workoutTableHeaderText}
+          />
+          <Collapsible collapsed={workoutFinished}>
+            <WorkoutLogForm
+              workout={workout}
+              workoutPosition={workoutPosition}
+              advanceWorkoutPosition={advanceWorkoutPosition}
+              workoutFinished={workoutFinished}
+            />
+          </Collapsible>
+        </>
+      ) : (
+        <WorkoutLogForm />
+      )}
       <Text style={styles.tableTitle}>Logged sets:</Text>
       <WorkoutLogTable workoutLog={workoutLog} />
       <WorkoutLogVideos videoSets={setsWithVideos} />
