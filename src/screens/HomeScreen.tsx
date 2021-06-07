@@ -31,6 +31,9 @@ export function HomeScreen() {
     }, [])
   );
 
+  const workoutDate: Date = new Date(nextWorkout?.date as string);
+  const workoutIsToday = isToday(workoutDate);
+
   function handleBeginWorkout() {
     dispatch(setLogInProgress(true));
     dispatch(clearEditWorkoutLog());
@@ -52,6 +55,7 @@ export function HomeScreen() {
           <BeginWorkoutButton
             workout={nextWorkout}
             handleBeginWorkout={handleBeginWorkout}
+            workoutIsToday={workoutIsToday}
           />
         </>
       ) : (
@@ -86,15 +90,16 @@ export function HomeScreen() {
 interface BeginWorkoutButtonProps {
   workout: workoutData;
   handleBeginWorkout: () => void;
+  workoutIsToday: boolean;
 }
 
 function BeginWorkoutButton({
   workout,
   handleBeginWorkout,
+  workoutIsToday,
 }: BeginWorkoutButtonProps) {
   if (!workout.date) return null;
-  const workoutDate: Date = new Date(workout.date as string);
-  const buttonText: string = isToday(workoutDate)
+  const buttonText: string = workoutIsToday
     ? "Begin workout"
     : "Log a separate workout";
   return (
