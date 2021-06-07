@@ -3,15 +3,16 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import "RNBootSplash.h"
+#import <React/RCTLinkingManager.h>
 
 #ifdef FB_SONARKIT_ENABLED
-#import "RNBootSplash.h"
+
 #import <FlipperKit/FlipperClient.h>
 #import <FlipperKitLayoutPlugin/FlipperKitLayoutPlugin.h>
 #import <FlipperKitNetworkPlugin/FlipperKitNetworkPlugin.h>
 #import <FlipperKitReactPlugin/FlipperKitReactPlugin.h>
 #import <FlipperKitUserDefaultsPlugin/FKUserDefaultsPlugin.h>
-#import <React/RCTLinkingManager.h>
 #import <SKIOSNetworkPlugin/SKIOSNetworkAdapter.h>
 
 static void InitializeFlipper(UIApplication *application) {
