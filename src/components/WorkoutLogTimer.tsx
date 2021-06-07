@@ -1,5 +1,6 @@
 import * as React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EntryData } from "../slices/workoutLogsSlice";
 import { Helvetica, successColor } from "../util/constants";
 import { useInterval } from "../util/hooks";
@@ -11,6 +12,7 @@ interface WorkoutLogTimerProps {
   setFormData: React.Dispatch<React.SetStateAction<EntryData>>;
   setInProgress: boolean;
   handleAddSet: () => void;
+  workout: boolean;
 }
 
 export function WorkoutLogTimer({
@@ -18,6 +20,7 @@ export function WorkoutLogTimer({
   setFormData,
   setInProgress,
   handleAddSet,
+  workout,
 }: WorkoutLogTimerProps) {
   const [timeElapsedSinceLastSet, setTimeElapsedSinceLastSet] = React.useState(
     0
@@ -30,8 +33,10 @@ export function WorkoutLogTimer({
     setInProgress ? undefined : 1000
   );
 
+  const { top } = useSafeAreaInsets();
+
   return (
-    <View style={styles.timer}>
+    <View style={[styles.timer, { paddingTop: workout ? undefined : top }]}>
       <Text style={styles.timerText}>
         {renderRestInterval(timeElapsedSinceLastSet / 1000)}
       </Text>
@@ -83,10 +88,13 @@ const styles = StyleSheet.create({
   timer: {
     width: "100%",
     alignItems: "center",
-    paddingTop: 10,
+    paddingVertical: 10,
+    backgroundColor: "aliceblue",
+    borderBottomColor: "black",
+    borderBottomWidth: 0.4,
   },
   timerText: {
-    fontSize: 30,
+    fontSize: 40,
     fontFamily: Helvetica,
     borderRadius: 5,
     padding: 5,
