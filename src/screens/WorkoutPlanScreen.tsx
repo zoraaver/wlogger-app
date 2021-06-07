@@ -26,6 +26,7 @@ import {
 } from "../slices/workoutPlansSlice";
 import { Helvetica, successColor } from "../util/constants";
 import { DDMMYYYYDateFormat } from "../util/util";
+import { LoadingScreen } from "./LoadingScreen";
 
 type WorkoutPlanScreenRouteProp = RouteProp<WorkoutPlanStackParamList, "show">;
 
@@ -54,6 +55,9 @@ export function WorkoutPlanScreen() {
     dispatch(addWeek());
     weekItemListRef.current?.scrollToEnd();
   }
+
+  if (workoutPlan?._id !== id)
+    return <LoadingScreen backgroundColor="powderblue" />;
 
   return (
     <>
