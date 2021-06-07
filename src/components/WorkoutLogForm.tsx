@@ -1,44 +1,75 @@
 import * as React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  useWindowDimensions,
-  ViewStyle,
-} from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import { Button } from "./Button";
 import { WorkoutLogTimer } from "./WorkoutLogTimer";
 import Ionicon from "react-native-vector-icons/Ionicons";
-import { addFormVideo, addSet, EntryData } from "../slices/workoutLogsSlice";
-import { Helvetica, successColor } from "../util/constants";
+import {
+  addFormVideo,
+  addSet,
+  EntryData,
+  WorkoutLogPosition,
+} from "../slices/workoutLogsSlice";
+import { Helvetica } from "../util/constants";
 import { useAppDispatch } from "..";
 import { useNavigation, useRoute } from "@react-navigation/core";
 import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
 import { getFileStats } from "../util/util";
-import NumericInput, { INumericInputProps } from "react-native-numeric-input";
-import { DeviceOrientation, useOrientation } from "../util/hooks";
 import { WeightUnitButtons } from "./WeightUnitButtons";
+import { WeightInput } from "./WeightInput";
+import { RepsInput } from "./RepsInput";
+import { workoutData } from "../slices/workoutsSlice";
 
-export function WorkoutLogForm() {
-  const [setInProgress, setSetInProgress] = React.useState(false);
-  const [exerciseNameError, setExerciseNameError] = React.useState("");
-  const videoRecording = useRoute<NewWorkoutLogScreenRouteProp>().params;
-  const dispatch = useAppDispatch();
-
-  const [formData, setFormData] = React.useState<EntryData>({
+function initialLogData(): EntryData {
+  return {
     name: "",
     repetitions: 0,
     weight: 0,
     unit: "kg",
     restInterval: Date.now(),
-  });
+  };
+}
+
+interface WorkoutLogFormProps {
+  workout?: workoutData;
+  workoutPosition: WorkoutLogPosition;
+  advanceWorkoutPosition: () => void;
+  workoutFinished: boolean;
+}
+
+export function WorkoutLogForm({
+  workout,
+  workoutPosition,
+  advanceWorkoutPosition,
+  workoutFinished,
+}: WorkoutLogFormProps) {
+  const [setInProgress, setSetInProgress] = React.useState(false);
+  const [exerciseNameError, setExerciseNameError] = React.useState("");
+
+  const videoRecording = useRoute<NewWorkoutLogScreenRouteProp>().params;
+  const dispatch = useAppDispatch();
+
+  const [formData, setFormData] = React.useState<EntryData>(initialLogData());
   const navigation = useNavigation<AuthenticatedNavigation>();
-  const width = useWindowDimensions().width;
-  const orientation: DeviceOrientation = useOrientation();
-  const numericInputWidth =
-    width * (orientation === DeviceOrientation.portrait ? 0.65 : 0.8);
+  const [numericInputWidth, setNumericInputWidth] = React.useState(300);
+
+  React.useEffect(() => {
+    if (workout && !workoutFinished) {
+      const { exerciseIndex } = workoutPosition;
+      const { repetitions, weight, name, _id, unit } = workout.exercises[
+        exerciseIndex
+      ];
+      setFormData({
+        ...formData,
+        repetitions,
+        weight,
+        name,
+        exerciseId: _id,
+        unit,
+        restInterval: Date.now(),
+      });
+    }
+  }, [workoutPosition, workout, workoutFinished]);
 
   function handleVideo() {
     if (videoRecording.cancelled) {
@@ -50,25 +81,33 @@ export function WorkoutLogForm() {
 
   async function handleAddSet() {
     if (setInProgress) {
-      if (formData.name === "") {
-        setExerciseNameError("Exercise name is required");
-        return;
-      }
-      setExerciseNameError("");
-      dispatch(addSet(formData));
-
-      if (!videoRecording.cancelled) {
-        await addLogVideo();
-      }
-
-      setFormData({ ...formData, restInterval: Date.now() });
-      setSetInProgress(!setInProgress);
+      await logSet();
     } else {
       setFormData({
         ...formData,
         restInterval: (Date.now() - formData.restInterval) / 1000,
       });
-      setSetInProgress(!setInProgress);
+    }
+    setSetInProgress(!setInProgress);
+  }
+
+  async function logSet() {
+    if (formData.name === "") {
+      setExerciseNameError("Exercise name is required");
+      return;
+    }
+
+    setExerciseNameError("");
+    dispatch(addSet(formData));
+
+    if (!videoRecording.cancelled) {
+      await addLogVideo();
+    }
+
+    if (workout) {
+      advanceWorkoutPosition();
+    } else {
+      setFormData({ ...formData, restInterval: Date.now() });
     }
   }
 
@@ -90,54 +129,58 @@ export function WorkoutLogForm() {
         setFormData={setFormData}
         setInProgress={setInProgress}
         handleAddSet={handleAddSet}
+        workout={!!workout}
       />
       <View style={styles.inputArea}>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Exercise: </Text>
-          <View style={{ flex: 1 }}>
-            <TextInput
-              style={[
-                styles.logInput,
-                {
-                  borderColor: exerciseNameError ? "red" : "black",
-                },
-              ]}
-              placeholder={
-                exerciseNameError ? "Exercise name required" : "Exercise name"
-              }
-              placeholderTextColor={exerciseNameError ? "red" : "grey"}
-              value={formData.name}
-              clearButtonMode="while-editing"
-              returnKeyType="done"
-              onChangeText={(name) => {
-                setFormData({ ...formData, name });
-                setExerciseNameError("");
-              }}
-            />
+          <View
+            style={{ flex: 1 }}
+            onLayout={({ nativeEvent }) =>
+              setNumericInputWidth(nativeEvent.layout.width)
+            }
+          >
+            {workout ? (
+              <Text style={styles.exerciseNameText}>{formData.name}</Text>
+            ) : (
+              <TextInput
+                style={[
+                  styles.logInput,
+                  {
+                    borderColor: exerciseNameError ? "red" : "black",
+                  },
+                ]}
+                placeholder={
+                  exerciseNameError ? "Exercise name required" : "Exercise name"
+                }
+                placeholderTextColor={exerciseNameError ? "red" : "grey"}
+                value={formData.name}
+                clearButtonMode="while-editing"
+                returnKeyType="done"
+                onChangeText={(name) => {
+                  setFormData({ ...formData, name });
+                  setExerciseNameError("");
+                }}
+              />
+            )}
           </View>
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Weight: </Text>
-          <NumericInput
-            {...commonNumericInputProps}
-            totalWidth={numericInputWidth}
-            step={1.25}
-            onChange={(weight) => setFormData({ ...formData, weight })}
-            value={formData.weight}
-            valueType="real"
+          <WeightInput
+            weight={formData.weight}
+            onWeightChange={(weight) => setFormData({ ...formData, weight })}
+            width={numericInputWidth}
           />
         </View>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Reps: </Text>
-          <NumericInput
-            {...commonNumericInputProps}
-            totalWidth={numericInputWidth}
-            step={1}
+          <RepsInput
             onChange={(repetitions) =>
               setFormData({ ...formData, repetitions })
             }
-            value={formData.repetitions}
-            valueType="integer"
+            repetitions={formData.repetitions}
+            width={numericInputWidth}
           />
         </View>
         <View style={styles.inputSection}>
@@ -180,15 +223,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   inputArea: {
-    flex: 1,
     width: "100%",
     padding: 20,
   },
   inputSection: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 10,
+    height: 50,
+    marginTop: 10,
   },
   inputLabel: {
     width: 100,
@@ -196,23 +238,9 @@ const styles = StyleSheet.create({
     fontFamily: Helvetica,
     paddingRight: 10,
   },
-  numericInputContainer: {
-    flex: 1,
-  },
-  numericInput: {
-    backgroundColor: "white",
+  exerciseNameText: {
+    fontSize: 30,
+    fontFamily: Helvetica,
+    textAlign: "center",
   },
 });
-
-const commonNumericInputProps: INumericInputProps = {
-  type: "plus-minus",
-  rounded: true,
-  leftButtonBackgroundColor: "red",
-  rightButtonBackgroundColor: successColor,
-  minValue: 0,
-  totalHeight: 50,
-  iconStyle: { color: "white" } as ViewStyle,
-  inputStyle: styles.numericInput,
-  containerStyle: styles.numericInputContainer,
-  onChange: () => {},
-};
