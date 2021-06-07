@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
 import { API } from "../config/axios.config";
+import { isToday } from "../util/util";
 import { weightUnit, Day, workoutPlansUrl } from "./workoutPlansSlice";
 
 export type incrementField = "weight" | "repetitions" | "sets";
@@ -14,8 +15,8 @@ export interface exerciseData {
   name: string;
   restInterval?: number;
   sets: number;
-  repetitions?: number;
-  weight?: number;
+  repetitions: number;
+  weight: number;
   unit: weightUnit;
   _id?: string;
   autoIncrement?: { field: incrementField; amount: number };
@@ -75,5 +76,13 @@ const slice = createSlice({
     });
   },
 });
+
+// utility functions
+
+export function isWorkoutToday(workout?: workoutData): boolean {
+  if (!workout || !workout.date) return false;
+  const date = new Date(workout.date);
+  return isToday(date);
+}
 
 export const workoutsReducer = slice.reducer;
