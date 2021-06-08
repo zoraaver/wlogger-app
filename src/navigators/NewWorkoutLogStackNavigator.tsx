@@ -4,6 +4,7 @@ import {
 } from "@react-navigation/stack";
 import * as React from "react";
 import { RecordResponse } from "react-native-camera";
+import { EditLogEntryScreen } from "../screens/EditLogEntryScreen";
 import { NewWorkoutLogScreen } from "../screens/NewWorkoutLogScreen";
 import { WorkoutLogCameraScreen } from "../screens/WorkoutLogCameraScreen";
 import { WorkoutLogVideoScreen } from "../screens/WorkoutLogVideoScreen";
@@ -18,6 +19,7 @@ export type NewWorkoutLogStackParamList = {
   camera: undefined;
   showVideo: WorkoutLogStackParamList["showVideo"];
   upload: undefined;
+  editLogEntry: { setIndex: number; exerciseIndex: number; title: string };
 };
 
 export type NewLogNavigation = StackNavigationProp<NewWorkoutLogStackParamList>;
@@ -58,6 +60,15 @@ export function NewWorkoutLogStackNavigator() {
           title: "Uploading videos",
           headerLeft: () => null,
         }}
+      />
+      <Stack.Screen
+        name="editLogEntry"
+        component={EditLogEntryScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          headerBackTitle: "New log",
+          title: route.params.title,
+        })}
       />
     </Stack.Navigator>
   );
