@@ -56,7 +56,7 @@ export function WorkoutPlanScreen() {
     weekItemListRef.current?.scrollToEnd();
   }
 
-  if (workoutPlan?._id !== id)
+  if (id && workoutPlan?._id !== id)
     return <LoadingScreen backgroundColor="powderblue" />;
 
   return (
