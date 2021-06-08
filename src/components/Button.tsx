@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleProp } from "react-native";
+import { ActivityIndicator, StyleProp } from "react-native";
 import {
   NativeSyntheticEvent,
   NativeTouchEvent,
@@ -15,6 +15,7 @@ interface ButtonProps {
   onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 export function Button({
@@ -23,6 +24,7 @@ export function Button({
   onPress,
   style,
   disabled,
+  loading,
 }: ButtonProps) {
   return (
     <TouchableOpacity
@@ -31,7 +33,7 @@ export function Button({
       onPress={onPress}
       disabled={disabled}
     >
-      {children}
+      {loading ? <ActivityIndicator size="small" color="white" /> : children}
     </TouchableOpacity>
   );
 }
