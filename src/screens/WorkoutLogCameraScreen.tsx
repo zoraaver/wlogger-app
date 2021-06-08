@@ -11,6 +11,7 @@ import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { NewLogNavigation } from "../navigators/NewWorkoutLogStackNavigator";
 
 const megaByte = 1000000;
+const maxVideoFileSize = 80 * megaByte;
 
 export function WorkoutLogCameraScreen() {
   const navigation = useNavigation<NewLogNavigation>();
@@ -25,7 +26,7 @@ export function WorkoutLogCameraScreen() {
       const recording:
         | RecordResponse
         | undefined = await camera.current?.recordAsync({
-        maxFileSize: 50 * megaByte,
+        maxFileSize: maxVideoFileSize,
       });
       if (recording) {
         setIsRecording(false);
