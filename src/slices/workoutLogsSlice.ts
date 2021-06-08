@@ -65,8 +65,9 @@ export interface setLogData {
   repetitions: number;
   formVideoName?: string;
   formVideoExtension?: videoFileExtension;
-  restInterval?: number;
+  restInterval: number;
   unit: weightUnit;
+  tempId?: number;
 }
 interface S3SignedPostForm {
   url: string;
@@ -371,70 +372,96 @@ const slice = createSlice({
   name: "workoutLogs",
   initialState,
   reducers: {
-    addSet(state, action: PayloadAction<EntryData>) {
-      const {
-        name,
-        repetitions,
-        weight,
-        unit,
-        restInterval,
-        exerciseId,
-      } = action.payload;
+    addSet(
+      state,
+      {
+        payload: { name, repetitions, weight, unit, restInterval, exerciseId },
+      }: PayloadAction<EntryData>
+    ) {
       const exercises = state.editWorkoutLog.exercises;
+
       const lastLoggedExercise =
         exercises.length > 0 ? exercises[exercises.length - 1] : undefined;
+
       const exercisesMatch: boolean | undefined =
         lastLoggedExercise &&
         (exerciseId !== undefined
           ? lastLoggedExercise.exerciseId === exerciseId
           : lastLoggedExercise.name == name);
+
+      const tempId = Date.now();
+
       if (exercisesMatch) {
         lastLoggedExercise!.sets.push({
           weight,
           unit,
           repetitions,
           restInterval,
+          tempId,
         });
       } else {
         exercises.push({
           name,
           exerciseId,
-          sets: [{ weight, unit, repetitions, restInterval }],
+          sets: [{ weight, unit, repetitions, restInterval, tempId }],
         });
       }
     },
+
+    updateSet(
+      state,
+      {
+        payload: { setIndex, exerciseIndex, updatedSet },
+      }: PayloadAction<WorkoutLogPosition & { updatedSet: EntryData }>
+    ) {
+      const exercise = state.editWorkoutLog.exercises[exerciseIndex];
+      if (exercise) {
+        const set = exercise.sets[setIndex];
+        if (set) {
+          const { repetitions, unit, weight } = updatedSet;
+          exercise.sets[setIndex] = {
+            ...exercise.sets[setIndex],
+            repetitions,
+            unit,
+            weight,
+          };
+        }
+      }
+    },
+
     setWorkoutId(state, action: PayloadAction<string | undefined>) {
       state.editWorkoutLog.workoutId = action.payload;
     },
+
     setSuccess(state, action: PayloadAction<string | undefined>) {
       state.success = action.payload;
     },
-    clearEditWorkoutLog(state, action: PayloadAction<void>) {
+
+    clearEditWorkoutLog(state) {
       state.editWorkoutLog = { exercises: [], createdAt: undefined };
     },
+
     setFormVideo(
       state,
-      action: PayloadAction<
+      {
+        payload: { setIndex, exerciseIndex, fileName, fileExtension },
+      }: PayloadAction<
         WorkoutLogPosition & {
           fileName?: string;
           fileExtension?: videoFileExtension;
         }
       >
     ) {
-      const {
-        setIndex,
-        exerciseIndex,
-        fileName,
-        fileExtension,
-      } = action.payload;
       state.formVideoError = undefined;
       const set = state.editWorkoutLog.exercises[exerciseIndex].sets[setIndex];
       set.formVideoName = fileName;
       set.formVideoExtension = fileExtension;
     },
+
     setFormVideoError(state, action: PayloadAction<string | undefined>) {
       state.formVideoError = action.payload;
     },
+
     addVideoUploadProgress(
       state,
       action: PayloadAction<{ fileName: string; percentage: number }>
@@ -567,6 +594,7 @@ export const videoSetsSelector = createSelector(
 export const workoutLogsReducer = slice.reducer;
 export const {
   addSet,
+  updateSet,
   setSuccess,
   clearEditWorkoutLog,
   setWorkoutId,
