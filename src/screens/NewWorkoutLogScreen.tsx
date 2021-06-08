@@ -113,6 +113,17 @@ export function NewWorkoutLogScreen() {
     }
   }
 
+  function handleRowPress(exerciseIndex: number, setIndex: number) {
+    navigation.navigate("NewLog", {
+      screen: "editLogEntry",
+      params: {
+        exerciseIndex,
+        setIndex,
+        title: `exercise ${exerciseIndex + 1}: set ${setIndex + 1}`,
+      },
+    });
+  }
+
   const workoutTableHeaderText: string = workoutFinished
     ? "Workout complete"
     : ` Workout progress: exercise ${workoutPosition.exerciseIndex + 1}/${
@@ -142,7 +153,7 @@ export function NewWorkoutLogScreen() {
         <WorkoutLogForm />
       )}
       <Text style={styles.tableTitle}>Logged sets:</Text>
-      <WorkoutLogTable workoutLog={workoutLog} />
+      <WorkoutLogTable workoutLog={workoutLog} onRowPress={handleRowPress} />
       <WorkoutLogVideos videoSets={setsWithVideos} />
       <View style={styles.finishWorkoutArea}>
         <Button
