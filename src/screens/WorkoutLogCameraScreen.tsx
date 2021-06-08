@@ -9,9 +9,7 @@ import { useInterval } from "../util/hooks";
 import { renderRestInterval } from "../util/util";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { NewLogNavigation } from "../navigators/NewWorkoutLogStackNavigator";
-
-const megaByte = 1000000;
-const maxVideoFileSize = 80 * megaByte;
+import { maxVideoFileSize } from "../slices/workoutLogsSlice";
 
 export function WorkoutLogCameraScreen() {
   const navigation = useNavigation<NewLogNavigation>();
