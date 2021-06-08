@@ -7,10 +7,12 @@ import {
   addFormVideo,
   addSet,
   EntryData,
+  setLogData,
+  updateSet,
   WorkoutLogPosition,
 } from "../slices/workoutLogsSlice";
-import { Helvetica } from "../util/constants";
-import { useAppDispatch } from "..";
+import { Helvetica, successColor } from "../util/constants";
+import { useAppDispatch, useAppSelector } from "..";
 import { useNavigation, useRoute } from "@react-navigation/core";
 import { AuthenticatedNavigation } from "../navigators/AuthenticatedTabNavigator";
 import { NewWorkoutLogScreenRouteProp } from "../screens/NewWorkoutLogScreen";
@@ -35,6 +37,7 @@ interface WorkoutLogFormProps {
   workoutPosition?: WorkoutLogPosition;
   advanceWorkoutPosition?: () => void;
   workoutFinished?: boolean;
+  editEntry?: WorkoutLogPosition;
 }
 
 export function WorkoutLogForm({
@@ -42,6 +45,7 @@ export function WorkoutLogForm({
   workoutPosition,
   advanceWorkoutPosition,
   workoutFinished,
+  editEntry,
 }: WorkoutLogFormProps) {
   const [setInProgress, setSetInProgress] = React.useState(false);
   const [exerciseNameError, setExerciseNameError] = React.useState("");
@@ -49,7 +53,18 @@ export function WorkoutLogForm({
   const videoRecording = useRoute<NewWorkoutLogScreenRouteProp>().params;
   const dispatch = useAppDispatch();
 
-  const [formData, setFormData] = React.useState<EntryData>(initialLogData());
+  const entryLogData = useAppSelector((state) => {
+    if (editEntry) {
+      const exercicse =
+        state.workoutLogs.editWorkoutLog.exercises[editEntry.exerciseIndex];
+      const set: setLogData = exercicse?.sets[editEntry.setIndex];
+      return { ...set, name: exercicse.name };
+    }
+  });
+
+  const [formData, setFormData] = React.useState<EntryData>(
+    entryLogData || initialLogData()
+  );
   const navigation = useNavigation<AuthenticatedNavigation>();
   const [numericInputWidth, setNumericInputWidth] = React.useState(300);
 
@@ -122,15 +137,24 @@ export function WorkoutLogForm({
     navigation.setParams({ cancelled: true });
   }
 
+  function handleUpdateSet() {
+    if (editEntry) {
+      dispatch(updateSet({ ...editEntry, updatedSet: formData }));
+      navigation.goBack();
+    }
+  }
+
   return (
     <>
-      <WorkoutLogTimer
-        formData={formData}
-        setFormData={setFormData}
-        setInProgress={setInProgress}
-        handleAddSet={handleAddSet}
-        workout={!!workout}
-      />
+      {editEntry ? null : (
+        <WorkoutLogTimer
+          formData={formData}
+          setFormData={setFormData}
+          setInProgress={setInProgress}
+          handleAddSet={handleAddSet}
+          workout={!!workout}
+        />
+      )}
       <View style={styles.inputArea}>
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>Exercise: </Text>
@@ -140,7 +164,7 @@ export function WorkoutLogForm({
               setNumericInputWidth(nativeEvent.layout.width)
             }
           >
-            {workout ? (
+            {workout || editEntry ? (
               <Text style={styles.exerciseNameText}>{formData.name}</Text>
             ) : (
               <TextInput
@@ -191,20 +215,30 @@ export function WorkoutLogForm({
             height={50}
           />
         </View>
-        <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Video: </Text>
+        {editEntry ? (
           <Button
-            onPress={handleVideo}
-            color={videoRecording.cancelled ? "darkblue" : "darkred"}
-            style={{ flex: 1 }}
+            onPress={handleUpdateSet}
+            color={successColor}
+            style={styles.editButton}
           >
-            <Ionicon
-              name={videoRecording.cancelled ? "videocam" : "trash"}
-              color="white"
-              size={25}
-            />
+            <Text style={styles.buttonText}>Save changes</Text>
           </Button>
-        </View>
+        ) : (
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Video: </Text>
+            <Button
+              onPress={handleVideo}
+              color={videoRecording.cancelled ? "darkblue" : "darkred"}
+              style={{ flex: 1 }}
+            >
+              <Ionicon
+                name={videoRecording.cancelled ? "videocam" : "trash"}
+                color="white"
+                size={25}
+              />
+            </Button>
+          </View>
+        )}
       </View>
     </>
   );
@@ -242,5 +276,8 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontFamily: Helvetica,
     textAlign: "center",
+  },
+  editButton: {
+    marginVertical: 10,
   },
 });
