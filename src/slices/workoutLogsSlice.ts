@@ -8,7 +8,7 @@ import {
 import axios, { AxiosResponse } from "axios";
 import { Platform } from "react-native";
 import RNFetchBlob from "rn-fetch-blob";
-import { RootState } from "..";
+import { AppDispatch, RootState } from "..";
 import { API } from "../config/axios.config";
 import { getToken } from "../util/util";
 import { weightUnit } from "./workoutPlansSlice";
@@ -34,6 +34,7 @@ interface workoutLogState {
   formVideoError?: string;
   videoUploadProgress: { [fileName: string]: number };
   dataPending?: boolean;
+  postWorkoutLogPending?: boolean;
 }
 
 export interface workoutLogHeaderData {
@@ -244,7 +245,7 @@ function constructAndSendS3VideoUploadRequests(
 function sendS3VideoUploadRequest(
   S3UploadUrl: string,
   form: FormData,
-  dispatch: any,
+  dispatch: AppDispatch,
   requestIndex: number
 ): Promise<AxiosResponse<any>> {
   return axios.post(S3UploadUrl, form, {
@@ -476,11 +477,17 @@ const slice = createSlice({
       (state, action: PayloadAction<workoutLogData>) => {
         const dateLogged: Date = new Date(action.payload.createdAt as string);
         state.success = `Successfully logged workout on ${dateLogged.toLocaleString()}`;
+        state.postWorkoutLogPending = false;
       }
     );
 
+    addCase(postWorkoutLog.pending, (state) => {
+      state.postWorkoutLogPending = true;
+    });
+
     addCase(postWorkoutLog.rejected, (state, action) => {
       state.editWorkoutLog = { exercises: [] };
+      state.postWorkoutLogPending = false;
       console.error(action.error.message);
     });
 
