@@ -1,13 +1,25 @@
 import * as React from "react";
-import { View, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, ViewStyle, TouchableHighlight } from "react-native";
 
 interface RowProps {
   children: JSX.Element[] | JSX.Element;
   style?: ViewStyle;
+  onPress?: () => void;
 }
 
-export function Row({ children, style }: RowProps) {
-  return <View style={[styles.row, style]}>{children}</View>;
+export function Row({ children, style, onPress }: RowProps) {
+  return onPress ? (
+    <TouchableHighlight
+      underlayColor="lightyellow"
+      activeOpacity={0.5}
+      onPress={onPress}
+      style={{ flex: 1 }}
+    >
+      <View style={[styles.row, style]}>{children}</View>
+    </TouchableHighlight>
+  ) : (
+    <View style={[styles.row, style]}>{children}</View>
+  );
 }
 
 const styles = StyleSheet.create({
