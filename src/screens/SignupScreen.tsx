@@ -24,6 +24,7 @@ export function SignupScreen() {
 
   const signupError = useAppSelector((state) => state.user.signupError);
   const signupSuccess = useAppSelector((state) => state.user.signupSuccess);
+  const postUserPending = useAppSelector((state) => state.user.postUserPending);
 
   const navigation = useNavigation<UnauthenticatedNavigation>();
 
@@ -128,6 +129,8 @@ export function SignupScreen() {
               dispatch(signupUser(formData));
             }}
             color={successColor}
+            loading={postUserPending}
+            disabled={postUserPending}
           >
             <Text style={styles.signupButtonText}>Sign up</Text>
           </Button>
