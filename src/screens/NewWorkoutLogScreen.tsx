@@ -70,6 +70,10 @@ export function NewWorkoutLogScreen() {
 
   const [workoutFinished, setWorkoutFinished] = React.useState(false);
 
+  const postWorkoutLogPending = useAppSelector(
+    (state) => state.workoutLogs.postWorkoutLogPending
+  );
+
   React.useEffect(() => {
     if (videoUploadInProgress)
       navigation.navigate("NewLog", { screen: "upload" });
@@ -160,6 +164,8 @@ export function NewWorkoutLogScreen() {
           onPress={handleLogWorkout}
           color={successColor}
           style={styles.button}
+          loading={postWorkoutLogPending}
+          disabled={postWorkoutLogPending}
         >
           <Text style={styles.buttonText}>Log workout</Text>
         </Button>
