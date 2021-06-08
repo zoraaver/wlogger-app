@@ -14,6 +14,8 @@ import { getToken } from "../util/util";
 import { weightUnit } from "./workoutPlansSlice";
 
 export const workoutLogUrl = "/workoutLogs";
+const megaByte = 1000000;
+export const maxVideoFileSize = 100 * megaByte;
 
 export interface workoutLogData {
   exercises: Array<exerciseLogData>;
@@ -140,8 +142,6 @@ export const addFormVideo = createAsyncThunk(
     position: { setIndex?: number; exerciseIndex?: number; file: File },
     { dispatch, getState }
   ) => {
-    const megaByte = 1000000;
-    const fileSizeLimit = 50 * megaByte;
     const rootState = getState() as RootState;
     const {
       file,
@@ -158,8 +158,12 @@ export const addFormVideo = createAsyncThunk(
           `${fileExtension} is not an allowed file type: Allowed types are 'mov', 'mp4' and 'avi'`
         )
       );
-    } else if (file.size > fileSizeLimit) {
-      dispatch(setFormVideoError(`File size cannot exceed 50 MB`));
+    } else if (file.size > maxVideoFileSize) {
+      dispatch(
+        setFormVideoError(
+          `File size cannot exceed ${maxVideoFileSize / megaByte} MB`
+        )
+      );
     } else if (logVideoFiles.length >= 5) {
       dispatch(
         setFormVideoError(
