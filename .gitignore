@@ -63,3 +63,6 @@ buck-out/
 
 # xcode workspace
 ios/wloggerApp.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# android upload keystore passwords
+android/key.properties
