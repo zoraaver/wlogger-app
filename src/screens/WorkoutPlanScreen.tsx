@@ -199,14 +199,14 @@ function WorkoutPlanControls({
           <Text style={styles.buttonText}>Start Plan</Text>
         </Button>
       )}
-      <Button onPress={handleSave} style={styles.button}>
-        {planUpdateInProgress ? (
-          <ActivityIndicator size="small" color="aliceblue" />
-        ) : (
-          <Text style={styles.buttonText}>
-            {workoutPlan?._id ? "Save changes" : "Create"}
-          </Text>
-        )}
+      <Button
+        onPress={handleSave}
+        style={styles.button}
+        loading={planUpdateInProgress}
+      >
+        <Text style={styles.buttonText}>
+          {workoutPlan?._id ? "Save changes" : "Create"}
+        </Text>
       </Button>
     </View>
   );
