@@ -2,6 +2,19 @@ apply plugin: "com.android.application"
 
 import com.android.build.OutputFile
 
+def getPassword(String currentUser, String keyChain) {
+   def stdout = new ByteArrayOutputStream()
+   def stderr = new ByteArrayOutputStream()
+   exec {
+       commandLine 'security', '-q', 'find-generic-password', '-a', currentUser, '-s', keyChain, '-w'
+       standardOutput = stdout
+       errorOutput = stderr
+       ignoreExitValue true
+   }
+   //noinspection GroovyAssignabilityCheck
+      stdout.toString().trim()
+}
+
 /**
  * The react.gradle file registers a task for each build variant (e.g. bundleDebugJsAndAssets
  * and bundleReleaseJsAndAssets).
@@ -91,7 +104,7 @@ apply from: "../../node_modules/react-native/react.gradle"
  * Upload all the APKs to the Play Store and people will download
  * the correct one based on the CPU architecture of their device.
  */
-def enableSeparateBuildPerCPUArchitecture = false
+def enableSeparateBuildPerCPUArchitecture = true
 
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
@@ -119,6 +132,9 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  * and the benefits of using Hermes will therefore be sharply reduced.
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
+
+def uploadKeyPassword = getPassword("Zoraaver Singh", "wlogger_upload_keystore")
+def uploadStorePassword = getPassword("Zoraaver Singh", "wlogger_upload_keystore")
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -152,6 +168,14 @@ android {
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+        }
+         release {
+            if (project.hasProperty('WLOGGER_UPLOAD_STORE_FILE')) {
+                storeFile file(WLOGGER_UPLOAD_STORE_FILE)
+                storePassword uploadStorePassword
+                keyAlias WLOGGER_UPLOAD_KEY_ALIAS
+                keyPassword uploadKeyPassword
+            }
         }
     }
     buildTypes {
