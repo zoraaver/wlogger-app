@@ -123,20 +123,17 @@ interface signupError {
 type authenticationStatus = "pending" | "confirmed" | "unknown";
 
 interface userState {
-  loginError: string | undefined;
-  signupError: signupError | undefined;
-  signupSuccess: string | undefined;
-  verificationError: string | undefined;
+  loginError?: string;
+  signupError?: signupError;
+  signupSuccess?: string;
+  verificationError?: string;
   authenticationStatus: authenticationStatus;
   data: userData | null;
+  postUserPending?: boolean;
 }
 
 const initialState: userState = {
   data: null,
-  loginError: undefined,
-  verificationError: undefined,
-  signupSuccess: undefined,
-  signupError: undefined,
   authenticationStatus: "pending",
 };
 
@@ -150,9 +147,11 @@ const slice = createSlice({
     ) {
       state.authenticationStatus = action.payload;
     },
+
     setSignupSuccess(state, action: PayloadAction<string | undefined>) {
       state.signupSuccess = action.payload;
     },
+
     setSignupError(state, action: PayloadAction<signupError | undefined>) {
       state.signupError = action.payload;
     },
@@ -171,7 +170,7 @@ const slice = createSlice({
       state.authenticationStatus = "confirmed";
     });
 
-    addCase(loginUser.pending, (state, action) => {
+    addCase(loginUser.pending, (state) => {
       state.authenticationStatus = "pending";
     });
 
@@ -191,7 +190,7 @@ const slice = createSlice({
       state.authenticationStatus = "unknown";
     });
 
-    addCase(googleLoginUser.pending, (state, action) => {
+    addCase(googleLoginUser.pending, (state) => {
       state.authenticationStatus = "pending";
     });
 
@@ -204,11 +203,11 @@ const slice = createSlice({
       }
     );
 
-    addCase(validateUser.pending, (state, action) => {
+    addCase(validateUser.pending, (state) => {
       state.authenticationStatus = "pending";
     });
 
-    addCase(validateUser.rejected, (state, action) => {
+    addCase(validateUser.rejected, (state) => {
       state.data = null;
       state.authenticationStatus = "unknown";
     });
@@ -228,6 +227,11 @@ const slice = createSlice({
     addCase(signupUser.fulfilled, (state, action: PayloadAction<string>) => {
       state.signupSuccess = `Account successfully created: a verification email has been sent to ${action.payload}`;
       state.signupError = undefined;
+      state.postUserPending = false;
+    });
+
+    addCase(signupUser.pending, (state) => {
+      state.postUserPending = true;
     });
 
     addCase(signupUser.rejected, (state, action: PayloadAction<unknown>) => {
@@ -237,14 +241,15 @@ const slice = createSlice({
         error: signupError.error,
       };
       state.signupSuccess = undefined;
+      state.postUserPending = false;
     });
 
-    addCase(logoutUser.fulfilled, (state, action: PayloadAction<void>) => {
+    addCase(logoutUser.fulfilled, (state) => {
       state.data = null;
       state.authenticationStatus = "unknown";
     });
 
-    addCase(logoutUser.pending, (state, action) => {
+    addCase(logoutUser.pending, (state) => {
       state.authenticationStatus = "pending";
     });
   },
