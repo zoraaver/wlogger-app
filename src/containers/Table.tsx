@@ -30,6 +30,8 @@ interface TableProps<RowData, CellData> {
   scrollable?: boolean;
   headerTextStyle?: TextStyle;
   borderWidth?: number;
+  onRowPress?: (rowData: RowData, rowIndex: number) => void;
+  rowKeyExtractor?: (rowData: RowData) => string | number;
 }
 
 export function Table<RowData, CellData>({
@@ -40,6 +42,8 @@ export function Table<RowData, CellData>({
   mergeCell,
   headerTextStyle,
   stripeColor,
+  onRowPress,
+  rowKeyExtractor,
   borderWidth = 0,
   scrollable = false,
 }: TableProps<RowData, CellData>) {
@@ -59,7 +63,9 @@ export function Table<RowData, CellData>({
     mapRowDataToCells,
     borderWidth,
     mergeCell,
-    color
+    color,
+    onRowPress,
+    rowKeyExtractor
   );
 
   if (headerRow) rows.unshift(headerRow);
@@ -96,7 +102,9 @@ function renderRows<RowData, CellData>(
   mapRowDataToCells: TableProps<RowData, CellData>["mapRowDataToCells"],
   borderWidth: TableProps<RowData, CellData>["borderWidth"],
   mergeCell: TableProps<RowData, CellData>["mergeCell"],
-  color: TableProps<RowData, CellData>["color"]
+  color: TableProps<RowData, CellData>["color"],
+  onRowPress: TableProps<RowData, CellData>["onRowPress"],
+  rowKeyExtractor: TableProps<RowData, CellData>["rowKeyExtractor"]
 ): JSX.Element[] {
   let rows: JSX.Element[] = [];
   let cellColors: RowCellColors = { previousRow: [], currentRow: [] };
@@ -118,7 +126,14 @@ function renderRows<RowData, CellData>(
 
     cellColors.previousRow = [...cellColors.currentRow];
     cellColors.currentRow = [];
-    rows.push(<Row key={rowIndex}>{cells}</Row>);
+    rows.push(
+      <Row
+        key={rowKeyExtractor?.(rowData) || rowIndex + 1}
+        onPress={onRowPress ? () => onRowPress(rowData, rowIndex) : undefined}
+      >
+        {cells}
+      </Row>
+    );
   });
 
   return rows;
