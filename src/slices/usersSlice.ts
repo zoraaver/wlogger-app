@@ -6,9 +6,15 @@ import { extractTokenFromSetCookieHeaders } from "../util/util";
 
 const loginUrl = "/auth/login";
 const googleLoginUrl = "/auth/google";
+const appleLoginUrl = "/auth/apple";
 const validateUrl = "/auth/validate";
 const verifyUrl = "/auth/verify";
 const usersUrl = "/users";
+
+const OAuthProviderLoginUrlMap = {
+  apple: appleLoginUrl,
+  google: googleLoginUrl,
+} as const;
 
 interface userLoginData {
   email: string;
@@ -47,13 +53,19 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-export const googleLoginUser = createAsyncThunk(
-  "users/googleLoginUser",
-  async (idToken: string) => {
+interface OAuthLoginUserArg {
+  idToken: string;
+  OAuthProvider: keyof typeof OAuthProviderLoginUrlMap;
+}
+
+export const OAuthLoginUser = createAsyncThunk(
+  "users/OAuthLoginUser",
+  async ({ idToken, OAuthProvider }: OAuthLoginUserArg) => {
     try {
+      const OAuthLoginUrl = OAuthProviderLoginUrlMap[OAuthProvider];
       const response: AxiosResponse<{
         user: userData;
-      }> = await API.post(googleLoginUrl, { idToken });
+      }> = await API.post(OAuthLoginUrl, { idToken });
       await saveToken(response);
       return response.data.user;
     } catch (error) {
@@ -175,7 +187,7 @@ const slice = createSlice({
     });
 
     addCase(
-      googleLoginUser.fulfilled,
+      OAuthLoginUser.fulfilled,
       (state, action: PayloadAction<userData>) => {
         const userData = action.payload;
         state.data = userData;
@@ -184,13 +196,13 @@ const slice = createSlice({
       }
     );
 
-    addCase(googleLoginUser.rejected, (state, action) => {
+    addCase(OAuthLoginUser.rejected, (state, action) => {
       state.data = null;
       state.loginError = action.error.message;
       state.authenticationStatus = "unknown";
     });
 
-    addCase(googleLoginUser.pending, (state) => {
+    addCase(OAuthLoginUser.pending, (state) => {
       state.authenticationStatus = "pending";
     });
 
