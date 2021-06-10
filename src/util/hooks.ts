@@ -19,16 +19,21 @@ export function useOrientation(): DeviceOrientation {
     : DeviceOrientation.landscape;
 }
 
+export type KeyboardEvent = Parameters<KeyboardEventListener>[0];
+
 export function useKeyboard(
   event: KeyboardEventName,
-  listener: KeyboardEventListener
+  listener: KeyboardEventListener,
+  dependencies?: any[]
 ): void {
+  const memoizedListener = useCallback(listener, dependencies || []);
+
   useEffect(() => {
-    Keyboard.addListener(event, listener);
+    Keyboard.addListener(event, memoizedListener);
     return () => {
-      Keyboard.removeListener(event, listener);
+      Keyboard.removeListener(event, memoizedListener);
     };
-  }, []);
+  }, dependencies || []);
 }
 
 export function useHideTabBarInNestedStack(hideTabBar?: boolean) {
