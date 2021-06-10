@@ -2,9 +2,9 @@ import axios from "axios";
 import { Platform } from "react-native";
 import { getToken } from "../util/util";
 
-const backendUrl: string = "https://wlogger.uk/api";
+export const backendUrl: string = "https://wlogger.uk/api";
 const developmentUrl: string =
-  Platform.OS === "ios" ? "http://192.168.86.250:8080" : "http://10.0.2.2:8080";
+  Platform.OS === "ios" ? "http://192.168.86.25:8080" : "http://10.0.2.2:8080";
 
 export const baseURL =
   process.env.NODE_ENV === "production" ? backendUrl : developmentUrl;
