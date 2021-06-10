@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useAppDispatch, useAppSelector } from "..";
 import { loginUser } from "../slices/usersSlice";
 import { Helvetica } from "../util/constants";
+import { AppleButton } from "./AppleButton";
 import { Button } from "./Button";
 import { GoogleButton } from "./GoogleButton";
 
@@ -53,6 +54,7 @@ export default function LoginForm() {
         <Text style={styles.loginButtonText}>Sign in</Text>
       </Button>
       <GoogleButton />
+      <AppleButton />
     </View>
   );
 }
