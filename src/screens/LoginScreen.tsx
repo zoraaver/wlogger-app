@@ -2,13 +2,11 @@ import * as React from "react";
 import {
   StyleSheet,
   Text,
-  Animated,
   Platform,
   KeyboardEventName,
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { DismissKeyboard } from "../components/DismissKeyboard";
 import { HorizontalDivider } from "../components/HorizontalDivider";
@@ -19,46 +17,62 @@ import {
   infoColor,
   successColor,
 } from "../util/constants";
-import { useKeyboard } from "../util/hooks";
+import { DeviceOrientation, useKeyboard, useOrientation } from "../util/hooks";
 import { useNavigation } from "@react-navigation/core";
 import { UnauthenticatedNavigation } from "../navigators/UnauthenticatedStackNavigator";
+import { KeyboardEvent } from "../util/hooks";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function LoginScreen() {
   const navigation = useNavigation<UnauthenticatedNavigation>();
   const windowHeight = useWindowDimensions().height;
-  const logoAreaMaxHeight = React.useRef(new Animated.Value(windowHeight))
-    .current;
+  const logoAreaMaxHeight = useSharedValue(windowHeight);
 
   const keyboardEvents = Platform.select({
     ios: { show: "keyboardWillShow", hide: "keyboardWillHide" },
     android: { show: "keyboardDidShow", hide: "keyboardDidHide" },
   }) as { show: KeyboardEventName; hide: KeyboardEventName };
 
-  useKeyboard(keyboardEvents.show, decreaseLogoAreaHeightAnimation);
-  useKeyboard(keyboardEvents.hide, increaseLogoAreaHeightAniimation);
+  const isLandScape = useOrientation() === DeviceOrientation.landscape;
 
-  function decreaseLogoAreaHeightAnimation(event: any) {
-    Animated.timing(logoAreaMaxHeight, {
-      toValue: windowHeight / 4.0,
-      duration: event.duration * 1.5,
-      useNativeDriver: false,
-    }).start();
-  }
+  useKeyboard(
+    keyboardEvents.show,
+    (event: KeyboardEvent) =>
+      (logoAreaMaxHeight.value = withTiming(
+        windowHeight / (isLandScape ? 1.8 : 4),
+        {
+          duration: event.duration * 1.5,
+        }
+      )),
+    [isLandScape, windowHeight]
+  );
 
-  function increaseLogoAreaHeightAniimation(event: any) {
-    Animated.timing(logoAreaMaxHeight, {
-      toValue: windowHeight,
-      duration: event.duration * 1.5,
-      useNativeDriver: false,
-    }).start();
-  }
+  useKeyboard(
+    keyboardEvents.hide,
+    (event: KeyboardEvent) =>
+      (logoAreaMaxHeight.value = withTiming(windowHeight, {
+        duration: event.duration * 1.5,
+      })),
+    [windowHeight]
+  );
+
+  const animatedLogoAreaStyle = useAnimatedStyle(() => ({
+    maxHeight: logoAreaMaxHeight.value,
+  }));
 
   return (
     <DismissKeyboard>
-      <SafeAreaView style={styles.loginScreen} edges={["bottom"]}>
-        <Animated.View
-          style={[styles.logoArea, { maxHeight: logoAreaMaxHeight }]}
-        >
+      <View
+        style={[
+          styles.loginScreen,
+          { flexDirection: isLandScape ? "row" : "column" },
+        ]}
+      >
+        <Animated.View style={[styles.logoArea, animatedLogoAreaStyle]}>
           <Text style={styles.logoHeader}>wLogger</Text>
           <Text style={styles.logoText}>Track and log workouts</Text>
         </Animated.View>
@@ -72,7 +86,7 @@ export default function LoginScreen() {
             <Text style={styles.signupButtonText}>Create an account</Text>
           </Button>
         </View>
-      </SafeAreaView>
+      </View>
     </DismissKeyboard>
   );
 }
