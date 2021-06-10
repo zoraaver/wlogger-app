@@ -1,34 +1,33 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as React from "react";
 import { Text, Image, StyleSheet } from "react-native";
-import { useAppDispatch } from "..";
+import { AppDispatch, useAppDispatch } from "..";
 import { OAuthLoginUser } from "../slices/usersSlice";
 import { Helvetica, primaryColor } from "../util/constants";
 import { Button } from "./Button";
 
+async function handleGoogleSignIn(dispatch: AppDispatch) {
+  try {
+    const playServicesAvailable: boolean = await GoogleSignin.hasPlayServices({
+      showPlayServicesUpdateDialog: true,
+    });
+    if (playServicesAvailable) {
+      const userInfo = await GoogleSignin.signIn();
+      dispatch(
+        OAuthLoginUser({
+          idToken: userInfo.idToken as string,
+          OAuthProvider: "google",
+        })
+      );
+    }
+  } catch (error) {}
+}
+
 export function GoogleButton() {
   const dispatch = useAppDispatch();
-  async function handleGoogleSignIn() {
-    try {
-      const playServicesAvailable: boolean = await GoogleSignin.hasPlayServices(
-        {
-          showPlayServicesUpdateDialog: true,
-        }
-      );
-      if (playServicesAvailable) {
-        const userInfo = await GoogleSignin.signIn();
-        dispatch(
-          OAuthLoginUser({
-            idToken: userInfo.idToken as string,
-            OAuthProvider: "google",
-          })
-        );
-      }
-    } catch (error) {}
-  }
 
   return (
-    <Button color={primaryColor} onPress={handleGoogleSignIn}>
+    <Button color={primaryColor} onPress={() => handleGoogleSignIn(dispatch)}>
       <Image
         source={require("../assets/images/google_logo.png")}
         style={styles.googleButtonImage}
