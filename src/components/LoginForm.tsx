@@ -37,6 +37,7 @@ export default function LoginForm() {
         }}
         blurOnSubmit={false}
         onChangeText={(email) => setFormData({ ...formData, email })}
+        disableFullscreenUI={true}
       ></TextInput>
       <TextInput
         style={styles.loginInput}
@@ -48,6 +49,7 @@ export default function LoginForm() {
         returnKeyType="done"
         textContentType="password"
         onChangeText={(password) => setFormData({ ...formData, password })}
+        disableFullscreenUI={true}
         secureTextEntry
       ></TextInput>
       <Button onPress={() => dispatch(loginUser(formData))}>
