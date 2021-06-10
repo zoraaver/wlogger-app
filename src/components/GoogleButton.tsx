@@ -2,7 +2,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as React from "react";
 import { Text, Image, StyleSheet } from "react-native";
 import { useAppDispatch } from "..";
-import { googleLoginUser } from "../slices/usersSlice";
+import { OAuthLoginUser } from "../slices/usersSlice";
 import { Helvetica, primaryColor } from "../util/constants";
 import { Button } from "./Button";
 
@@ -17,17 +17,18 @@ export function GoogleButton() {
       );
       if (playServicesAvailable) {
         const userInfo = await GoogleSignin.signIn();
-        dispatch(googleLoginUser(userInfo.idToken as string));
+        dispatch(
+          OAuthLoginUser({
+            idToken: userInfo.idToken as string,
+            OAuthProvider: "google",
+          })
+        );
       }
     } catch (error) {}
   }
 
   return (
-    <Button
-      color={primaryColor}
-      style={styles.googleLoginButton}
-      onPress={handleGoogleSignIn}
-    >
+    <Button color={primaryColor} onPress={handleGoogleSignIn}>
       <Image
         source={require("../assets/images/google_logo.png")}
         style={styles.googleButtonImage}
@@ -38,11 +39,6 @@ export function GoogleButton() {
 }
 
 const styles = StyleSheet.create({
-  googleLoginButton: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    paddingLeft: 10,
-  },
   googleLoginButtonText: {
     fontFamily: Helvetica,
     color: "white",
@@ -52,8 +48,9 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     backgroundColor: "white",
-    padding: 15,
+    position: "absolute",
+    left: 8,
+    padding: 10,
     borderRadius: 5,
-    marginRight: 60,
   },
 });
