@@ -96,7 +96,12 @@ export function WorkoutLogForm({
 
   async function handleAddSet() {
     if (setInProgress) {
-      await logSet();
+      if (formData.name === "") {
+        setExerciseNameError("Exercise name is required");
+        return;
+      } else {
+        await logSet();
+      }
     } else {
       setFormData({
         ...formData,
@@ -107,11 +112,6 @@ export function WorkoutLogForm({
   }
 
   async function logSet() {
-    if (formData.name === "") {
-      setExerciseNameError("Exercise name is required");
-      return;
-    }
-
     setExerciseNameError("");
     dispatch(addSet(formData));
 
