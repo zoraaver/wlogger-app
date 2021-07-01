@@ -11,6 +11,7 @@ import {
   useSelector,
 } from "react-redux";
 import { App } from "./components/App";
+import { exercisesReducer } from "./slices/exercisesSlice";
 import { UIReducer } from "./slices/UISlice";
 import { userReducer } from "./slices/usersSlice";
 import { workoutLogsReducer } from "./slices/workoutLogsSlice";
@@ -23,6 +24,7 @@ export const store = configureStore({
     workoutPlans: workoutPlansReducer,
     workoutLogs: workoutLogsReducer,
     workouts: workoutsReducer,
+    exercises: exercisesReducer,
     UI: UIReducer,
   },
 });
