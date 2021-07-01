@@ -144,3 +144,24 @@ async function openOSSettings(): Promise<(() => void) | undefined> {
     return AndroidOpenSettings.airplaneModeSettings;
   }
 }
+
+export function sortedIndex<T>(
+  array: Array<T>,
+  value: T,
+  isLessThan: (a: T, b: T) => boolean = (a, b) => a < b
+): number {
+  let low = 0;
+  let high = array.length;
+
+  while (low < high) {
+    let mid = (low + high) >>> 1;
+
+    if (isLessThan(array[mid], value)) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+
+  return low;
+}
