@@ -17,6 +17,7 @@ import { userReducer } from "./slices/usersSlice";
 import { workoutLogsReducer } from "./slices/workoutLogsSlice";
 import { workoutPlansReducer } from "./slices/workoutPlansSlice";
 import { workoutsReducer } from "./slices/workoutsSlice";
+import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from "./config/keys.json";
 
 export const store = configureStore({
   reducer: {
@@ -34,14 +35,9 @@ export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-const googleiOSClientId: string =
-  "695443910196-nvpotp45hi701vja07bomtpmqeo7395p.apps.googleusercontent.com";
-const googleWebClientId: string =
-  "695443910196-mc7763ul6h5k5kgf1p08hjfn2pv7kccs.apps.googleusercontent.com";
-
 GoogleSignin.configure({
-  iosClientId: googleiOSClientId,
-  webClientId: googleWebClientId,
+  iosClientId: GOOGLE_IOS_CLIENT_ID,
+  webClientId: GOOGLE_WEB_CLIENT_ID,
   scopes: ["email"],
 });
 
