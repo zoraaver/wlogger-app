@@ -9,8 +9,7 @@ import { backendUrl } from "../config/axios.config";
 import { OAuthLoginUser } from "../slices/usersSlice";
 import { Helvetica } from "../util/constants";
 import { Button } from "./Button";
-
-const APPLE_CLIENT_ID = "uk.wlogger";
+import { APPLE_CLIENT_ID } from "../config/keys.json";
 
 function handleAppleSignIn(dispatch: AppDispatch) {
   if (Platform.OS === "ios") {
