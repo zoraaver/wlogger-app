@@ -66,3 +66,6 @@ ios/wloggerApp.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 
 # android upload keystore passwords
 android/key.properties
+
+# backend url's + client id's
+src/config/keys.json
